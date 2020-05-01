@@ -1,0 +1,127 @@
+{
+	// Place your snippets for cmake here. Each snippet is defined under a snippet name and has a prefix, body and 
+	// description. The prefix is what is used to trigger the snippet and the body will be expanded and inserted. Possible variables are:
+	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. Placeholders with the 
+	// same ids are connected.
+	// Example:
+	// "Print to console": {
+	// 	"prefix": "log",
+	// 	"body": [
+	// 		"console.log('$1');",
+	// 		"$2"
+	// 	],
+	// 	"description": "Log output to console"
+	// }
+	"template" : {
+		"prefix": "template",
+		"body":[
+			"cmake_minimum_required(VERSION 3.10)",
+			"project($1)",
+			"",
+			"set(CMAKE_CXX_STANDARD 11)",
+			"",
+			"set(app_name $1)",
+			"",
+			"include(\\$ENV{HOME}/usr/cmake_modules/cmake_self.cmake)",
+			"include(\\$ENV{HOME}/usr/cmake_modules/common.cmake)",
+			"",
+			"# 设置编译输出的路径",
+			"set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG \\${CMAKE_BINARY_DIR}/lib)",
+			"set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG \\${CMAKE_BINARY_DIR}/lib)",
+			"set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG \\${CMAKE_BINARY_DIR}/bin)",
+			"set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE \\${CMAKE_BINARY_DIR}/lib)",
+			"set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE \\${CMAKE_BINARY_DIR}/lib)",
+			"set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE \\${CMAKE_BINARY_DIR}/bin)",
+			"set(CMAKE_C_FLAGS \"${CMAKE_C_FLAGS}  -Wall -march=native \")",
+			"set(CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS} -Wall -march=native\")",
+			"set(CMAKE_CXX_FLAGS_RELEASE \"${CMAKE_CXX_FLAGS_RELEASE} -Wall -march=native\")",
+			"set(CMAKE_CXX_FLAGS_DEBUG \"${CMAKE_CXX_FLAGS_DEBUG} -Wall -march=native\")",
+
+			"file(GLOB headers *.h *.hpp)",
+			"file(GLOB src *.cpp)",
+
+			"add_executable(\\${app_name}",
+			"\\${headers}",
+			"\\${src}",
+			")",
+			"",
+			"target_link_libraries(\\${app_name}",
+			"...",
+			")",
+			"",
+			"# 可执行程序的后缀需要额外设置",
+			"set_target_properties(\\${app_name} PROPERTIES",
+			"DEBUG_POSTFIX \\${CMAKE_DEBUG_POSTFIX}",
+			"RELEASE_POSTFIX \\${CMAKE_RELEASE_POSTFIX}",
+			"COMPILE_FLAGS \"/MP\")",
+			"",
+			"# configure the project to set some debug parameters in VS",
+			"configure_file(\\${CMAKE_SOURCE_DIR}/vs.user.in \\${app_name}.vcxproj.user)",
+			"",
+			"# 设置启动项目, 必须在最外层的CMAKELists.txt中设置",
+			"set_property(DIRECTORY \\${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT \\${app_name})",
+			"",
+			"# 可执行程序安装的基本设置",
+			"install(TARGETS \\${app_name} RUNTIME DESTINATION .)",
+			"install(CODE ",
+			"\"include(BundleUtilities)",
+			"fixup_bundle(\\${CMAKE_INSTALL_PREFIX}/\\${app_name}\\${CMAKE_RELEASE_POSTFIX}.exe \\\"\\\" \\\"\\${path}\\\")\")\""
+		]
+	},
+	"find_opencv" : {
+		"prefix": "find_opencv",
+		"body":["#opencv",
+				"find_package(OpenCV REQUIRED)",
+				"include_directories(\\${OpenCV_INCLUDE_DIRS})",
+				"#\\${OpenCV_LIBS}"
+			]
+	},
+	"find_g2o": {
+		"prefix": "find_g2o",
+		"body":["#G2O",
+			"find_package(G2O REQUIRED)",
+			"include_directories(\\${G2O_INCLUDE_DIR})",
+			"include_directories(\\${G2O_INCLUDE_DIR}/g2o/EXTERNAL/csparse)",
+			"#\\${G2O_LIBRARIES}"
+		]
+	},
+	"find_pcl": {
+		"prefix": "find_pcl",
+		"body":["#PCL",
+			"find_package(PCL 1.8 REQUIRED COMPONENTS common features filters kdtree ml octree registration io segmentation visualization)",
+			"include_directories(\\${PCL_INCLUDE_DIRS})",
+			"add_definitions(\\${PCL_DEFINITIONS})\\\"",
+			"\\${PCL_LIBRARIES}"
+		]
+	},
+	"find_boost": {
+		"prefix": "find_boost",
+		"body": ["#boost",
+			"find_package(Boost COMPONENTS  filesystem REQUIRED)",
+			"add_definitions(-DBOOST_SYSTEM_NO_DEPRECATED)",
+			"include_directories(\\${Boost_INCLUDE_DIRS})",
+			"link_directories(\\${Boost_LIBRARY_DIRS})",
+			"#\\${Boost_LIBRARIES}"
+		]
+	},
+	"eigen": {
+		"prefix": "find_eigen",
+		"body": ["#eigen",
+			"include_directories(\\${EIGEN_INCLUDE_DIRS})"
+		]
+	},
+	"qt": {
+		"prefix": "find_qt",
+		"body": ["#qt",
+			"find_package(Qt5 COMPONENTS Core Gui Widgets REQUIRED)",
+			"#Qt5::Core Qt5::Gui Qt5::Widgets"
+		]
+	},
+	"flann": {
+		"prefix": "find_flann",
+		"body": ["#flann",
+			"find_package(FLANN REQUIRED)",
+			"include_directories(\\${FLANN_INCLUDE_DIRS})"
+		]
+	}
+}
