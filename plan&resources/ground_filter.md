@@ -44,3 +44,6 @@ https://github.com/wavelab/libwave/tree/master/wave_matching/include/wave/matchi
 
 * AutoWare ray ground filter
 > https://github.com/CPFL/Autoware/tree/master/ros/src/sensing/filters/packages/points_preprocessor/nodes
+
+* Fast segmentation of 3D point clouds: A paradigm on LiDAR data for autonomous vehicle applications
+> https://github.com/VincentCheungM/Run_based_segmentation

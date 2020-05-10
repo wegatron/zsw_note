@@ -6,6 +6,24 @@ conda可以理解为一个工具，也是一个可执行命令，其核心功能
 Anaconda则是一个打包的集合，里面预装好了conda、某个版本的python、众多packages、科学计算工具等等，所以也称为Python的一种发行版.其实还有Miniconda，顾名思义，它只包含最基本的内容——python与conda，以及相关的必须依赖项，对于空间要求严格的用户，Miniconda是一种选择.
 
 ## 基本命令
+注意这里为了与ros共存, 将.bashrc中的conda初始化注释掉了, 因此使用conda之前打开.bashrc中的注释
+```bash
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/home/wegatron/opt/anaconda3/bin/conda' 'shell.bash' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/home/wegatron/opt/anaconda3/etc/profile.d/conda.sh" ]; then
+        . "/home/wegatron/opt/anaconda3/etc/profile.d/conda.sh"
+    else
+        export PATH="/home/wegatron/opt/anaconda3/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
+```
+
 更新命令
 ```bash
 # 工具自身更新
@@ -16,7 +34,7 @@ conda update anaconda-navigator
 
 激活环境
 ```bash
-activate [env_name]
+conda activate [env_name]
 ```
 
 创建环境

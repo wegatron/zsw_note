@@ -70,7 +70,7 @@ list(APPEND CMAKE_PREFIX_PATH "D:/usr/opencv3.4.1/opencv/build")
 cmake_minimum_required(VERSION 3.10)
 project(xxx)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Wall -march=native")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall")
 
