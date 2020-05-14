@@ -33,6 +33,7 @@ KITTI雷达点云与图像数据融合matlab源码: https://download.csdn.net/do
 [Mit Kimera](http://web.mit.edu/sparklab/2019/10/13/Kimera__an_Open-Source_Library_for_Real-Time_Metric-Semantic_Localization_and_Mapping.html)
 [zju3dv](https://github.com/zju3dv)
 [ZJU - SenseTime VISLAM Benchmark Introduce](http://www.zjucvg.net/eval-vislam/)
+[openvins](https://github.com/rpng/open_vins)
 
 ### Deep Learning
 吴恩达deep learning: https://mooc.study.163.com/learn/2001281002?tid=2001392029&_trace_c_p_k2_=f51997434b7942f693d1eb363dbc3961#/learn/content?type=detail&id=2001702006

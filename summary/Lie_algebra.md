@@ -92,9 +92,10 @@ J = \frac{\sin \theta}{\theta}I + (1 - \frac{\sin \theta}{\theta})aa^T+\frac{1-\
 $$
 同理, 我们可以根据变换矩阵中的$R$, $t$反求其李代数: 可通过$R$计算旋转向量, 从而得到$\phi$和$J$, 而$t$满足$t=J\rho$, 从而计算出$\rho$.
 对应关系图:
-<center>
-<img src="../rc/so_se_relation_ship.JPG" width="200%" height="200%">
-</center>
+<div style="text-align:center">
+<img src="../rc/so_se_relation_ship.JPG" width="100%" height="100%">
+</div>
+
 ## 李代数求导
 使用李代数的一大动机是为了优化求导, 研究李代数指数映射的乘积形式:
 $$
@@ -112,28 +113,39 @@ $$
   \end{array}
   \right.
 $$
+
 这里$J_l = J$, $J_l^{-1} = \frac{\theta}{2}\cot\frac{\theta}{2}I+(1-\frac{\theta}{2}\cot\frac{\theta}{2})aa^T - \frac{\theta}{2}a^\wedge$, $J_r=J_l(-\phi)$. 从而有:
+
 $$
-\exp(\Delta\phi^\wedge)\exp(\phi^\wedge) = \exp((J_l^{-1} \Delta \phi+ \phi)^\wedge) \\
-\exp((\Delta\phi+\phi)^\wedge) = \exp((J_l\Delta\phi)^\wedge)\exp(\phi^\wedge) = \exp(\phi^\wedge)\exp((J_r\Delta\phi)^\wedge)
+\begin{aligned}
+&\exp(\Delta\phi^\wedge)\exp(\phi^\wedge) = \exp((J_l^{-1} \Delta \phi+ \phi)^\wedge) \\
+&\exp((\Delta\phi+\phi)^\wedge) = \exp((J_l\Delta\phi)^\wedge)\exp(\phi^\wedge) = \exp(\phi^\wedge)\exp((J_r\Delta\phi)^\wedge)
+\end{aligned}
 $$
+
 类似的, 对于$\mathcal{SE}(3)$上的李代数, 有:
 $$
-\exp(\Delta\xi^\wedge)\exp(\xi^\wedge) \approx \exp((\mathcal{J}_l^{-1} \Delta \xi+ \xi)^\wedge) \\
-\exp(\xi^\wedge)\exp(\Delta\xi^\wedge) \approx \exp((\mathcal{J}_r^{-1}\Delta\xi)^\wedge)\exp(\xi^\wedge)
+\begin{aligned}
+&\exp(\Delta\xi^\wedge)\exp(\xi^\wedge) \approx \exp((\mathcal{J}_l^{-1} \Delta \xi+ \xi)^\wedge) \\
+&\exp(\xi^\wedge)\exp(\Delta\xi^\wedge) \approx \exp((\mathcal{J}_r^{-1}\Delta\xi)^\wedge)\exp(\xi^\wedge)
+\end{aligned}
 $$
+
 这里$\mathcal{J_l}$和$\mathcal{J_r}$的形式比较复杂(一般不用), 由此产生了李代数的两种求导方式. 这里只推导在$\mathcal{SO}(3)$上的情况, 然后直接给出在$\mathcal{SE}(3)$上的情况. 我们的目标:
 $$
 \frac{\partial Rp}{R} \Leftrightarrow \lim_{\Delta R \to 0} \frac{\Delta R R p}{\Delta R}
 $$
+
 一种方式认为$\Delta R R = \exp((\Delta \phi + \phi)^\wedge)$, 从而求:
 $$
 \lim_{\delta \phi \to 0} \frac{(\exp((\phi+\delta \phi)^\wedge) - \exp(\phi^\wedge))p}{\delta \phi} \Leftrightarrow \frac{\partial \exp(\phi^\wedge) p}{\partial \phi}
 $$
+
 另一种方式认为$\Delta R R = \exp(\varphi^\wedge)\exp(\phi^\wedge)$, 从而求:
 $$
 \lim_{\varphi \to 0} \frac{(\exp(\varphi^\wedge) \exp(\phi^\wedge) - \exp(\phi^\wedge))p}{\varphi} \Leftrightarrow \frac{\partial \exp(\phi^\wedge) p}{\partial \varphi}
 $$
+
 这里$\varphi$为$\Delta R$对应的李代数. 经过推导, 可以求得:
 $$
 \begin{aligned}
@@ -145,6 +157,7 @@ $$
 &= -(R p)^\wedge J_l
 \end{aligned}
 $$
+
 $$
 \begin{aligned}
 \frac{\partial \exp(\phi^\wedge) p}{\partial \varphi} &= \lim_{\varphi \to 0} \frac{(\exp(\varphi^\wedge) \exp(\phi^\wedge) - \exp(\phi^\wedge))p}{\varphi}\\
@@ -154,6 +167,7 @@ $$
 &= -(R p)^\wedge
 \end{aligned}
 $$
+
 由于第二种方式去除了形式复杂的J, 我们一般采用第二种方式. 类似的, 在$\mathcal{SE}(3)$上, 设变换为$T$, $\Delta T = \exp(\delta \xi^\wedge)$, $\delta \xi = [\delta \rho, \delta \phi]$有:
 $$
 \begin{aligned}
@@ -182,5 +196,52 @@ I & -(Rp+t)^\wedge \\
 \end{aligned}
 $$
 
-# Question
-1. 如何去优化RT(李代数起了什么作用)
+## 伴随
+伴随的定义:
+$$
+\mathrm{Ad}(T) = \begin{bmatrix}
+R & t^\wedge R\\
+0 & R
+\end{bmatrix}
+$$
+
+伴随的性质(左右扰动的关系, 变换左右扰动):
+$$
+\begin{aligned}
+T \exp(\xi^\wedge) T^{-1} = \exp((\mathrm{Ad}(T)\xi)^\wedge)\\
+T \exp(\xi^\wedge) = \exp((\mathrm{Ad}(T)\xi)^\wedge) T\\
+\end{aligned}
+$$
+
+简单证明:
+$$
+T \exp(\xi_1^\wedge) = \exp(\xi_2^\wedge) T
+$$
+
+运用:
+* 例如DSO中求相对位姿增量关于绝对位姿增量的导数
+  $T_{th}$帧$t$和$h$之前的相对位姿, $T_{hw}$, $T_{tw}$绝对位姿. 对$T_{hw}$加扰动$\epsilon_{hw}$, 对应的$T_{th}$产生扰动$\epsilon_{hw}$.
+  $$
+  \begin{aligned}
+  \exp(\epsilon_{th}^\wedge) T_{th} &= T_{tw} (\exp(\epsilon_{hw}^\wedge) T_{hw})^{-1}\\
+  &= T_{tw} T_{hw}^{-1} \exp(-\epsilon_{hw}^\wedge)\\
+  &= T_{th} \exp(-\epsilon_{hw}^\wedge)\\
+  \Rightarrow \exp(\epsilon_{th}^\wedge) &= T_{th} \exp(-\epsilon_{hw}^\wedge) T_{th}^  {-1}\\
+  &= \exp((-Ad(T_{th})\epsilon_{hw})^\wedge))\\
+  \Rightarrow \epsilon_{th} &= -\mathrm{Ad}(T_{th})\epsilon_{hw}\\
+  \Rightarrow \frac{\partial \epsilon_{th}}{\partial \epsilon_{hw}} &= -\mathrm{Ad}(T_  {th})
+  \end{aligned}
+  $$
+
+
+
+
+## 李代数的性质总结
+
+<div style="text-align:center">
+<img src="../rc/li_algebra_property_0.png" width="120%" height="120%">
+</div>
+
+<div style="text-align:center">
+<img src="../rc/li_algebra_property_1.png" width="120%" height="120%">
+</div>
