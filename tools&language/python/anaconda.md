@@ -107,8 +107,12 @@ anaconda-navigator在linux上不是很好用, 不推荐.
 __最佳的安装方法__: 在[conda的官网](https://anaconda.org/anaconda/repo)上搜索相应的包, 然后根据命令安装.
 常用的包:
 ```bash
-conda install -c anaconda numpy
-conda install -c conda-forge matplotlib
-conda install -c open3d-admin open3d
-conda install -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch/linux-64/ pytorch
+conda install -y -c anaconda numpy
+conda install -y -c conda-forge matplotlib
+conda install -y -c open3d-admin open3d
+conda install -y -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch/linux-64/ pytorch
+conda install -y -c conda-forge vtk
+conda install -y -c conda-forge pandas
+conda install -c conda-forge scikit-learn
+conda install -c conda-forge pyntcloud
 ```
