@@ -58,21 +58,23 @@ conda list -n [env_name] # 列举指定环境下所有包
 conda install -n [env_name] [package_name]
 ```
 
-使用pip安装到指定environment下
+使用pip安装到指定environment下(pip可能与conda不兼容, 不推荐使用)
 ```bash
 activate [env_name]
 [env_name_path]/pip install [package name]
 ```
 
-对于anaconda-navigator若换源, 则换完后使用 `update-index`更新列表.
-
-## conda源
-删除其他源
+清除索引缓存，保证用的是镜像站提供的索引
 ```bash
-conda config --remove channels
+conda clean -i
 ```
 
-国内镜像
+当安装被意外中断时, 再次安装可能会出现`segmentation fault`, 此时可以清理掉所有缓存:
+```bash
+conda clean -a
+```
+
+国内的一些源:
 * 清华大学镜像
     ```
     channels:
@@ -101,21 +103,12 @@ conda config --remove channels
     ssl_verify: true
     ```
 
-## pip源
-pip国内的一些镜像
-* 阿里云 http://mirrors.aliyun.com/pypi/simple/ 
-* 中国科技大学 https://pypi.mirrors.ustc.edu.cn/simple/ 
-* 豆瓣(douban) http://pypi.douban.com/simple/ 
-* 清华大学 https://pypi.tuna.tsinghua.edu.cn/simple/ 
-
-临时使用： 
-可以在使用pip的时候在后面加上-i参数，指定pip源 
-eg: pip install scrapy -i https://pypi.tuna.tsinghua.edu.cn/simple
-
-永久修改： 
-linux: 
-修改 ~/.pip/pip.conf (没有就创建一个)， 内容如下：
-```
-[global]
-index-url = https://pypi.tuna.tsinghua.edu.cn/simple
+anaconda-navigator在linux上不是很好用, 不推荐.
+__最佳的安装方法__: 在[conda的官网](https://anaconda.org/anaconda/repo)上搜索相应的包, 然后根据命令安装.
+常用的包:
+```bash
+conda install -c anaconda numpy
+conda install -c conda-forge matplotlib
+conda install -c open3d-admin open3d
+conda install -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch/linux-64/ pytorch
 ```

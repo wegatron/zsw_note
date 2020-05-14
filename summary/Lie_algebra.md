@@ -205,17 +205,35 @@ R & t^\wedge R\\
 \end{bmatrix}
 $$
 
-伴随的性质(左右扰动的关系, 变换左右扰动):
+伴随的性质(左右扰动的关系, 这里用右扰动来表示左扰动):
 $$
 \begin{aligned}
 T \exp(\xi^\wedge) T^{-1} = \exp((\mathrm{Ad}(T)\xi)^\wedge)\\
-T \exp(\xi^\wedge) = \exp((\mathrm{Ad}(T)\xi)^\wedge) T\\
+T \exp(\xi^\wedge) = \exp((\mathrm{Ad}(T)\xi)^\wedge) T
 \end{aligned}
 $$
 
 简单证明:
 $$
-T \exp(\xi_1^\wedge) = \exp(\xi_2^\wedge) T
+\begin{aligned}
+&T \exp(\delta \xi_1^\wedge) = \exp(\delta \xi_2^\wedge) T\\
+\begin{bmatrix}R & t\\0 & 1\end{bmatrix} &\begin{bmatrix} I+\delta \phi_1^\wedge & \delta \rho_1\\ 0 & 1\end{bmatrix} = \begin{bmatrix} I+\delta \phi_2^\wedge & \delta \rho_2\\ 0 & 1\end{bmatrix} \begin{bmatrix}R & t\\0 & 1\end{bmatrix}\\
+\Rightarrow &\left\{ \begin{array}{ccc}
+R(I + \delta \phi_1^\wedge) &=& (I+\delta \phi_2^\wedge)R\\
+R\delta \rho_1 + t &=& (I+\delta \phi_2^\wedge)t + \delta \rho_2
+\end{array}
+\right.\\
+\Rightarrow &\left\{ \begin{array}{ccc}
+\delta \phi_2 &=& R \delta \phi_1\\
+\delta \rho_2 &=& R \delta \rho_1 + t^\wedge R \delta \phi_1
+\end{array}
+\right.\\
+\Rightarrow &\begin{bmatrix}\delta \rho_2\\\delta \phi_2\end{bmatrix} = \begin{bmatrix}R & t^\wedge R\\0 & R\end{bmatrix}\begin{bmatrix}\delta \rho_1\\\delta \phi_1\end{bmatrix}\\
+\Rightarrow &\left\{\begin{array}{ccc}
+\xi_2 &=& \mathrm{Ad}(T) \xi_1\\
+\xi_1 &=& \mathrm{Ad}(T^{-1}) \xi_2
+\end{array}\right.
+\end{aligned}
 $$
 
 运用:
@@ -232,9 +250,6 @@ $$
   \Rightarrow \frac{\partial \epsilon_{th}}{\partial \epsilon_{hw}} &= -\mathrm{Ad}(T_  {th})
   \end{aligned}
   $$
-
-
-
 
 ## 李代数的性质总结
 
