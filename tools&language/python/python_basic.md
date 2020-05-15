@@ -188,3 +188,21 @@ Geeks :12, Portal :    0.55
 Second argument:  11, first one:   47.42
 Geeks:   453, Portal:    59.06
 ```
+
+## The underscore `_ `
+1. 在解释器中`_`表示上一个表达式的结果相当于octave的`ans`
+
+2. 用来表示unpack时忽略掉的值
+      ```python
+      x, _, y = (1, 2, 3)
+      x, *_, y = (1, 2, 3, 4, 5)
+      # Ignore the index
+      for _ in range(10)
+            do_something()
+      ```
+3. 用来表示一些特殊的函数或变量
+      * 前置单下划线, 用来表示private的class成员变量或成员函数, 以及对外不可见的变量或函数(import时不会被带入)
+
+      * 前置双下划线, `__method`成员函数名称会被修饰成`_ClassName__method`
+
+      * 前后双下划线, 一些特殊的函数和变量(magic method), 比如:`__init__`, `__len__`, `__eq__`
