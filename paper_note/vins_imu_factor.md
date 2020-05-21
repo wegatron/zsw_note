@@ -109,7 +109,9 @@ $$
 注意上面是导数, 积分有$\delta \mathbf{z}_{k+1} = \delta \mathbf{z}_{k} + \delta \mathbf{\dot{z}}_{k} \delta t = (\mathbf{I}+\mathbf{F} \delta t) \delta \mathbf{z}_{k} + (\mathbf{G} \delta t) \mathbf{n}_k$.
 >在误差传播过程中有这样一种性质(EKF), 如果能够找到状态量的递推公式$\delta z_{k+1} = F \delta z_k + G n_k$, 则有协方差$P_{ik+1}$和IMU残差对于bias的雅可比矩阵$J_{ik+1}^b$的递推更新公式:
 $$
-\begin{aligned} P_{i k+1}=& F_{k} P_{i k} F_{k}^{T}+G_{k} P_{n} G_{k}^{T} \\ J_{i k+1}^{b}=&F_{k} J_{i k}^{b} \end{aligned}
+\begin{aligned} P_{i k+1}&= F_{k} P_{i k} F_{k}^{T}+G_{k} P_{n} G_{k}^{T} \\ J_{i k+1}^{b}&=F_{k} J_{i k}^{b} \\
+P_n &= \mathrm{diag}(\sigma_{noise}^2)
+\end{aligned}
 $$
 
 到这里我们可以得到需要用来计算残差的几个量: Jacobian matrix $\mathbf{J}_{b_{k+1}}$, covariance matrix $\mathbf{P}_{b_{k+1}}^{b_k}$, 以及$\alpha_{b_{k+1}}^{b_k}, \beta_{b_{k+1}}^{b_k}, \gamma_{b_{k+1}}^{b_k}$基于bias的一阶近似(当bias变化量较小时, 用如下公式更新估计值, 不需要重新积分). ($\mathbf{J}_{b_{k+1}}$只是为了给后面提供对bias的Jacobian).
