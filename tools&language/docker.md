@@ -2,6 +2,17 @@
 ## 基本概念&原理
 
 ## 安装
+```bash
+# 安装必要包
+sudo apt install apt-transport-https ca-certificates curl software-properties-common
+# 为国内的 azure 仓库添加 GPG Key
+curl -fsSL https://mirror.azure.cn/docker-ce/linux/ubuntu/gpg | sudo apt-key add -
+# 添加 docker 仓库到 Apt 源
+sudo add-apt-repository "deb [arch=amd64] https://mirror.azure.cn/docker-ce/linux/ubuntu bionic stable"
+# 安装
+sudo apt update
+sudo apt install docker-ce docker-compose
+```
 
 ## 常用命令
 ### 镜像管理
@@ -133,7 +144,36 @@ Removing intermediate container 9cdc27646c7b
 Successfully built 44aa4490ce2c
 ```
 
+## Docker运行Nvidia
+
+在使用gcc编译包含有cuda头文件的cpp文件的时候出现cuda_runtime_api.h中未定义某类变量的错误 [参考](https://blog.csdn.net/mingyuan_liu/article/details/106210424)
+```bash
+/usr/local/cuda/include/cuda_runtime_api.h:9580:60: error: ‘cudaGraphExec_t’ was not declared in this scope
+ extern __host__ cudaError_t CUDARTAPI cudaGraphExecDestroy(cudaGraphExec_t graphExec);
+                                                             ^~~~~~~~~~~~~~~
+ /usr/local/cuda/include/cuda_runtime_api.h:9580:60: note: suggested alternative: ‘cudaGraphExecUpdate’
+extern __host__ cudaError_t CUDARTAPI cudaGraphExecDestroy(cudaGraphExec_t graphExec);
+                                                             ^~~~~~~~~~~~~~~
+                                                             cudaGraphExecUpdate
+/usr/local/cuda/include/cuda_runtime_api.h:9600:56: error: ‘cudaGraph_t’ was not declared in this scope
+ extern __host__ cudaError_t CUDARTAPI cudaGraphDestroy(cudaGraph_t graph);
+ ^~~~~~~~~~~
+/usr/local/cuda/include/cuda_runtime_api.h:9600:56: note: suggested alternative: ‘cudaError_t’
+ extern __host__ cudaError_t CUDARTAPI cudaGraphDestroy(cudaGraph_t graph);
+                                                         ^~~~~~~~~~~
+                                                         cudaError_t
+ src/caffe/CMakeFiles/caffe.dir/build.make:503: recipe for target 'src/caffe/CMakeFiles/caffe.dir/blob.cpp.o' failed
+ make[2]: *** [src/caffe/CMakeFiles/caffe.dir/blob.cpp.o] Error 1
+CMakeFiles/Makefile2:426: recipe for target 'src/caffe/CMakeFiles/caffe.dir/all' failed
+make[1]: *** [src/caffe/CMakeFiles/caffe.dir/all] Error 2
+Makefile:129: recipe for target 'all' failed
+```
+原因： /usr/include在gcc中的搜索优先级高于其他路径，因此当cuda_runtime_api.h在/usr/local/cuda/include文件夹下，而driver_types.h在/usr/include存在，则会优先去匹配/usr/include下的driver_types.h文件，从而造成两个文件冲突.
+
+
 
 ## Reference
 [docker小记](https://yeasy.gitbooks.io/docker_practice/content/image/build.html)
 [docker volume](https://www.binss.me/blog/learn-docker-with-me-about-volume/)
+[Docker运行NVIDIA容器](https://cloud-atlas.readthedocs.io/zh_CN/latest/docker/gpu/nvidia-docker.html)
+[](https://www.jb51.net/article/134449.htm)
