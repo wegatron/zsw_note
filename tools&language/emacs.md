@@ -20,3 +20,14 @@ Options--->Hide/Show
     ```
     clear t
     ```
+
+
+* conect elpa on start
+```
+;(package-refresh-contents)
+```
+
+* chinese input
+```
+LC_CTYPE='zh_CN.UTF-8'
+```

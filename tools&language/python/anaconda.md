@@ -115,4 +115,5 @@ conda install -y -c conda-forge vtk
 conda install -y -c conda-forge pandas
 conda install -c conda-forge scikit-learn
 conda install -c conda-forge pyntcloud
+conda install -y -c conda-forge tensorboardx protobuf fire
 ```
