@@ -110,10 +110,16 @@ __最佳的安装方法__: 在[conda的官网](https://anaconda.org/anaconda/rep
 conda install -y -c anaconda numpy
 conda install -y -c conda-forge matplotlib
 conda install -y -c open3d-admin open3d
-conda install -y -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch/linux-64/ pytorch
+conda install -y -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch/linux-64/ pytorch torchvision
+conda install -y -c conda-forge tqdm
 conda install -y -c conda-forge vtk
 conda install -y -c conda-forge pandas
+<<<<<<< HEAD
 conda install -c conda-forge scikit-learn
 conda install -c conda-forge pyntcloud
 conda install -y -c conda-forge tensorboardx protobuf fire
+=======
+conda install -y -c conda-forge scikit-learn
+conda install -y -c conda-forge pyntcloud
+>>>>>>> 488d3547bd62a57194b815ce4f5711efd41cf359
 ```

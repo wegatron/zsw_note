@@ -1,11 +1,10 @@
 [TOC]
-# Kalman 滤波用来解决什么样的问题
+## Kalman 滤波用来解决什么样的问题
 解决多传感器融合问题的最优解. 使用kalman滤波来融合多种机器人位置的预测(多传感器数据), 以期更加精准(鲁棒)地估计机器人的位置.
 
-# Kalman 滤波的基本原理
+## Kalman 滤波的基本原理
 假设每种预测(一般由不同的传感器数据计算得到)满足高斯分布(包括机器人的初始位置). 则在机器人运动的过程中, 可以将各个高斯分布的预测进行融合, 得到一个当前位置的最佳预测(也是高斯分布), 然后不断迭代.
 
-## 推导过程
 ### 理想的状态估计
 从一个简单的状态(只有位置和速度)开始考虑 $\hat{x} = [p, v]$, 小车的加速度为$a$, 则有:
 $$
@@ -73,68 +72,120 @@ P_k = F_k P_{k-1} F_k^T + Q_k
 \end{array}
 $$
 
-<img src="rc/ext_uncer2.png" alt="state transform" width="400" height="400"/> <img src="rc/ext_uncer3.png" alt="drawing" width="400" height="400"/>
+<img src="../rc/ext_uncer2.png" alt="state transform" width="400" height="400"/> <img src="../rc/ext_uncer3.png" alt="drawing" width="400" height="400"/>
 
 ### 通过测量优化估计
+
+<div style="text-align:center">
+<img src="../rc/fusion.png" width="50%" height="50%">
+</div>
+
 在上述预测的基础上, 我们还可以获得一些传感器的数据(满足高斯分布), 利用这些数据来优化我们的估计. 
 >We can figure out the distribution of sensor readings we’d expect to see in the usual way:
 $$
+\begin{aligned}
 \vec{\mu}_{expected} = H_k\hat{x}_k\\
 \Sigma_{expected} = H_k P_k H_k^T
+\end{aligned}
 $$
+
 高斯估计之间的融合:
+
 $$
+\begin{aligned}
 K = \Sigma_0(\Sigma_0+\Sigma_1)^{-1}\\
 \vec{\mu}' = \vec{\mu_0} + K(\vec{\mu_1} - \vec{\mu_0})\\
 \Sigma' = \Sigma_0 - K \Sigma_0
+\end{aligned}
 $$
 
-![fusion two estimatation](../rc/fusion.png)
+
 
 >We have two distributions: The predicted measurement with $(\mu_0, \Sigma_0)=(\hat{H}_k\hat{x}_k, H_kP_kH_k^T)$, and the observed measurment with$(\mu_1, \Sigma_1)=(\overrightarrow{z_k}, R_k)$.
 
-从而高斯融合之后有:
+## Kalman滤波算法总结
+### 线性Kalman滤波
+在t时刻, 状态可以由均值$\mu_t$和方差$\Sigma_t$来表示, 对于下一时刻状态的概率$p(x_t | u_t, x_{t-1})$, 有状态转移方程:
 $$
 \begin{aligned}
-H_k\hat{x}' &= H_k \hat{x}_k  &+&K(\overrightarrow{z_k} - H_k\hat{x}_k) \\
-H_k P_k' H_k^T &= H_k P_k H_k^T &-&KH_kP_kH_k^T
+x_t &= A_t x_{t-1} + B_t u_t + \varepsilon_t\\
+x_t &\sim \mathcal{N}(A_t \mu_{t-1} + B_t u_t, \; \; \Sigma_{t-1}+R_t)
 \end{aligned}
 $$
-这里$K = H_kP_kH_k^T(H_kP_kH_k^T + R_k)^{-1}$, 将$H_k$从每一项的头部去除, 可得:
+
+这里$\varepsilon_t$是状态转移噪声, $R_t$是噪声的协方差. 对于测量概率$p(z_t|x_t)$, 同样有:
 $$
 \begin{aligned}
-\hat{x}' &= \hat{x}_k  &+&K'(\overrightarrow{z_k} - H_k\hat{x}_k) \\
-P_k' H_k^T &= P_k H_k^T &-&K'H_kP_kH_k^T
+z_t &= C_t x_t + \delta_t\\
+z_t &\sim \mathcal{N}(C_t x_t,\; \; Q)
 \end{aligned}
 $$
-这里$K' = P_kH_k^T(H_kP_kH_k^T + R_k)^{-1}$
 
-## Kalman 滤波的简单理解
+这里$\delta_t$是测量噪声. 根据贝叶斯理论进行概率融合有:
 $$
-\hat{X}(k+1) = \Phi \cdot\hat{X}(k) + K \cdot (Z - \hat{Z})
+\begin{aligned}
+&p(x_t|u_t, z_t, x_{t-1}) \propto p(z_t|x_t) p(x_t|u_t, x_{t-1})\\
+\Rightarrow &bel(x_t) = \eta p(z_t|x_t) p(x_t|u_t, x_{t-1}) = \eta \exp(-J_t)
+\end{aligned}
 $$
 
-1. 利用系统模型进行递推, 得到下一时刻的<span style="color:red">预测值</span>.
-2. 利用预测值计算<span style="color:red">测量的估计值</span>, 利用<span style="color:red">实际测量值</span>和测量估计值之差构造<span style="color:red">新息</span>.
-3. 利用<span style="color:red">增益矩阵</span>和新息计算修正增益, 并修正预测值, 得到下一状态的估计值.
-4. 增益矩阵由状态、系统模型和测量模型的不确定度计算得到, 另有一套公式维护状态的不确定度.
-
-# Kalman 滤波的实现
-由Kalman滤波的公式推导. 我们若要实现kalman滤波, 需要搞清楚的是两个高斯分布分别是什么? 即需要知道在自己的问题中各个变量是如何定义的即可:
+这里$J_t = \frac{1}{2}(z_t - C_t x_t)^T Q_t^{-1} (z_t - C_t x_t) + \frac{1}{2}(x_t - \bar{\mu}_t)^T\bar{\Sigma}_t^{-1}(x_t - \bar{\mu}_t)$.
+$bel(x_t)$也服从高斯分布, 其均值和协方差可以通过其导数求得:
 $$
-\left\{
-	\begin{array}{c}
-	H_k =? \\
-	\hat{x}_k = ? \\
-	\overrightarrow{z_k} = ? \\
-	P_k = ? \\
-	R_k = ? \\
-	\end{array}
-\right.
+\begin{aligned}
+\frac{\partial J_t}{\partial x_t} &= -C_t^T Q_t^{-1}(z_t - C_tx_t) + \bar{\Sigma}_t^{-1}(x_t - \bar{\mu}_t)\\
+\frac{\partial^2 J}{\partial x^2} &= C_t^T Q_t^{-1} C_t + \bar{\Sigma}_t^{-1}
+\end{aligned}
 $$
-以IMU位姿的Kalman滤波为例, 我们可以从IMU中获取其三个轴方向上的加速度和角速度. 我们可以通过对角速度的积分来估计下一时刻的角度(估计值), 也可以直接根据加速度(假定是垂直向下的重力加速度)来计当前时刻的角度(观测值), 用Kalman滤波将两者结合起来.
 
-## 根据重力加速度计算Pitch, Roll
+最小化$J_t$, 令一阶导等于0, 可得均值, 二阶导的逆即协方差:
+$$
+\begin{aligned}
+\Sigma_t &= (C_t^T Q_t^{-1} C_t + \bar{\Sigma}_t^{-1})^{-1}\\
+\mu_t &= \Sigma_t C_t^T Q_t^{-1}(z_t - C_t \bar{\mu}_t) + \bar{\mu}_t
+\end{aligned}
+$$
+
+定义卡尔曼增益为: $K_t = \Sigma_t C_t^T Q_t^{-1}$, 则有:
+$$
+\mu_t = K_t(z_t - C_t \bar{\mu}_t) + \bar{\mu}_t
+$$
+
+计算时先计算卡尔曼增益, 通过他来计算协方差:
+$$
+\begin{aligned}
+K_t &= \bar{\Sigma}_t C_t^T(C_t \bar{\Sigma}_tC_t^T + Q_t)^{-1}\\
+\Sigma_t &= (I-K_tC_t)\bar{\Sigma}_t
+\end{aligned}
+$$
+
+伪代码：
+<div style="text-align:center">
+<img src="../rc/kalman_filter_alg.png" width="80%" height="80%">
+</div>
+
+### EKF
+对于非线性的状态转移函数或测量函数, 可以对其进行一阶泰勒展开, 再使用Kalman滤波:
+$$
+\begin{aligned}
+x_t &= g(u_t, x_{t-1}) + \varepsilon_t\\
+z_t &= h(x_t) + \delta_t
+\end{aligned}
+$$
+
+$$
+\begin{aligned}
+g(u_t, x_{t-1}) &\approx g(u_t, \mu_{t-1}) + G_t(x_{t-1} - \mu_{t-1})\\
+h(x_t) &\approx h(\bar{\mu}_t) + H_t(x_t - \bar{\mu}_t)
+\end{aligned}
+$$
+
+伪代码:
+<div style="text-align:center">
+<img src="../rc/ext_kalman_filter_alg.png">
+</div>
+
+## Example 根据重力加速度计算Pitch, Roll
 3个欧拉角的不同排序, 可以得到不同的旋转矩阵, 这里我们使用的排序为'x-y-z'. 更多排列组合见[Tilt Sensing Using Linear Accelerometers](https://cache.freescale.com/files/sensors/doc/app_note/AN3461.pdf)
 $$
 \begin{aligned}
@@ -247,3 +298,5 @@ float Kalman::getAngle(float newAngle, float newRate, float dt) {
 > 卡尔曼滤波C代码分析: https://blog.csdn.net/cztqwan/article/details/50084967
 
 > Tilt Sensing Using Linear Accelerometers: https://cache.freescale.com/files/sensors/doc/app_note/AN3461.pdf
+
+> Thrun S. Probabilistic robotics[M]. MIT Press, 2006.
