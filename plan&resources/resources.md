@@ -45,6 +45,7 @@ https://www.cnblogs.com/xtl9/p/8053331.html
 
 ### 数据集
 https://hyper.ai/datasets
+https://github.com/PaoPaoRobot/awesome-slam-datasets
 
 
 ### linux安装
