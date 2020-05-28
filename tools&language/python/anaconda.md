@@ -111,9 +111,6 @@ conda install -y -c anaconda numpy
 conda install -y -c conda-forge matplotlib
 conda install -y -c open3d-admin open3d
 conda install -y -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch/linux-64/ pytorch torchvision
-conda install -y -c conda-forge tqdm
-conda install -y -c conda-forge vtk
-conda install -y -c conda-forge pandas
-conda install -y -c conda-forge scikit-learn
-conda install -y -c conda-forge pyntcloud
+conda install -y -c conda-forge tqdm vtk pandas scikit-learn pyntcloud
+conda install -y -c conda-forge tensorboardx protobuf fire
 ```
