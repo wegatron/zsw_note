@@ -114,3 +114,6 @@ conda install -y -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch/
 conda install -y -c conda-forge tqdm vtk pandas scikit-learn pyntcloud
 conda install -y -c conda-forge tensorboardx protobuf fire
 ```
+
+## cuda安装
+ubuntu 18.04 使用源中的驱动即可, 然后根据官网的安装教程, 使用network deb的方式安装即可.
