@@ -1,9 +1,5 @@
- - [Plotting data](#5973297b1e05d782b78ef41923b083ad)
-     - [tips](#e4c9479b11955648dad558fe717a4eb2)
-
-<h2 id="5973297b1e05d782b78ef41923b083ad"></h2>
-
 # Plotting data
+    [TOC]
 
     plot操作会替换掉当前plot的内容
     使用 hold on命名保持当前plot的内容，避免被后续plot替换掉
@@ -19,7 +15,7 @@
     imagesc 可视化一个矩阵
     可以改变点的形状和尺寸
 
-```
+```matlab
 >> setenv("GNUTERM","qt")
 >> t=[0:0.01:0.98];
 >> y1= sin(2*pi*4*t); % 输出正旋函数
@@ -60,14 +56,14 @@
 <h2 id="e4c9479b11955648dad558fe717a4eb2"></h2>
 
 ## tips
-```
+```matlab
 plot(x, y, 'rx', 'MarkerSize', 10); % 改变 点的形状和尺寸
 ```
 
 
 For brew octave plotting error:
 
-```
+```bash
 brew uninstall fontconfig
 brew install fontconfig --universal
 
