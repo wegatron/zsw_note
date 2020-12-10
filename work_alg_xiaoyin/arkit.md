@@ -30,7 +30,18 @@
     Specific for people occlusion, there are two methods available that you can use. One option is person segmentation.
     This will-- you provide just with the segmentation of people rendered on top of the camera image.
     That's the best choice if you know that people will always be standing upfront and your virtual content will always be behind those people.
-    
+
+### Framework & API Reference
+* [ARConfiguration](https://developer.apple.com/documentation/arkit/arconfiguration)
+    不同的业务需求使用不同的configuration实体(algorithm flow), 并可以进行一些功能是否启用的配置.
+* [ARSession](https://developer.apple.com/documentation/arkit/arsession)
+    算法流的构建, 并管理硬件以及算法流程的(SLAM)状态:
+    1. 管理硬件(camera, gps, lidar, gryo)
+    2. 根据configuration, 组建并管理算法流程
+* [ARAnchor](https://developer.apple.com/documentation/arkit/aranchor)
+
+* [ARFrame](https://developer.apple.com/documentation/arkit/arframe)
+    ARFrame获取的两种方式: 推送式(为ARSession注册`delegate`), 主动获取`currentFrame`.
 
 ## Apple Realitykit
 RealityKit provides photo-realistic rendering, camera effects, animations, physics, and a lot more. It was built from the ground up specifically for AR.
@@ -42,10 +53,12 @@ RealityKit provides photo-realistic rendering, camera effects, animations, physi
     >And ARKit uses your face as a light probe to estimate lighting conditions, and generates spherical harmonics coefficients that you can apply to your rendering.
 3. Face tracking, 
 
-
 ## 参数
 Lidar 60HZ
 Front depth image 15HZ
 
 ## app galary
 https://github.com/olucurious/Awesome-ARKit
+
+## Reference
+🍅[Explore Arkit4 Notes](https://www.wwdcnotes.com/notes/wwdc20/10611/)
