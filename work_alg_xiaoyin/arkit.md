@@ -5,8 +5,7 @@
 
     __🍎rear camera with lidar:__
     [use segmentationBuffer and estimatedDepthData to implement people occlusion yourself.](https://developer.apple.com/documentation/arkit/arconfiguration/3089121-framesemantics)
-    TODO Demo
-
+ 
 2. 将人物移动到相同场景的同一个位置.
     [ARBodyAnchor](https://developer.apple.com/documentation/arkit/arbodytrackingconfiguration) + 场景scanning
 
@@ -57,8 +56,16 @@ RealityKit provides photo-realistic rendering, camera effects, animations, physi
 Lidar 60HZ
 Front depth image 15HZ
 
-## app galary
-https://github.com/olucurious/Awesome-ARKit
+
+## AR相关的信息、资料
+* [Spark AR Studio](https://sparkar.facebook.com/ar-studio/)
+    face book的AR 滤镜制作/设计工具(无需写代码)
+
+* [ARCore Depth API1](https://developers.googleblog.com/2020/06/a-new-wave-of-ar-realism-with-arcore-depth-api.html)
+
+* [ARCore Depth API2](https://www.infoq.com/news/2020/06/ARCore-depth-api-released/)
+    两个project: [lines-of-play](https://github.com/googlecreativelab/lines-of-play), [arcore-depth-lab](https://github.com/googlesamples/arcore-depth-lab/)
 
 ## Reference
 🍅[Explore Arkit4 Notes](https://www.wwdcnotes.com/notes/wwdc20/10611/)
+[app galary](https://github.com/olucurious/Awesome-ARKit)
