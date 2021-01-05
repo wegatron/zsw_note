@@ -124,7 +124,7 @@ reference: https://git-scm.com/docs/git-submodule
     2. 使用rebase分离出feature的修改序列(不包含`svn_local`)部分
         ```bash
         # 这里表示以svn 这个分支为base, 应用a9df44e ~ 8b30a59的修改到tmp
-        git rebase onto svn a9df44e^
+        git rebase --onto svn a9df44e^
         ```
     3. 若上一步成功, 则将之前的`svn`删除, 将`tmp`改为`svn`. 然后切换到`svn`, 提交到svn.
 

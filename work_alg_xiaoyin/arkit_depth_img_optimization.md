@@ -1,0 +1,96 @@
+## 深度图优化目标
+### 抖动处理
+<figure class="image">
+  <img src="rc/1.png">
+  <em><center>深度图抖动</center></em>
+</figure>
+
+对于相对静态的场景, 相邻帧confidence为high的深度像素任然会出现抖动(差异很大)的情况(如下图所示). 存在以下矛盾:
+①若相信当前帧的深度, 则会出现比较大的抖动, 但对于动态物体的实时性会很好.
+②若选择将当前帧与前几帧做加简单的权平均, 需要较多帧才能稳定, 且实时性变差, 会出现运动模糊.
+
+一个好的方案是: 对图像帧做光流, 对对应上的像素点做加权平均. 但此方案计算量会加大.
+
+<figure class="image">
+  <img src="rc/depth_high_a.png">
+  <img src="rc/depth_high_b.png">
+  <em><center>相邻帧高置信度的像素任可能会出现抖动</center></em>
+</figure>
+
+### 抗锯齿
+由于Lidar分辨率低, 直接使用在边界会存在很大的锯齿.
+
+## 输入数据
+* depth image
+* confidence map [low medium high]
+* camera pose of each frame (可以用来做重投影, 但若是固定相机, 动态的物体也没用)
+
+## 相关参考文献
+Face book: Fast Depth Densification for Occlusion-aware Augmented Reality
+
+该方法使用相机直接做稀疏的三维重建, 使用光流, 检测物体的边界(视角变化, 或者物体移动时, 前景和背景的像素移动不一样).
+![](rc/face_book_slu.png)
+
+该方法需要满足: 相机要有足够大的移动量(或相机中的物体有足够大的移动量).
+
+Google Depth api: 对深度图做抗锯齿, 简单快速, 但无法解决抖动的问题.
+<figure class="image">
+<center>
+<img src="rc/depth_map_antialiasing.png" width=500>
+
+<em>depth-guided FXAA抗锯齿</em>
+</center>
+</figure>
+
+## 方案&结果
+### 抗锯齿
+对深度图做抗锯齿(FXAA).
+<figure class="image">
+<center>
+<img src="rc/depth_img_fxaa2.png">
+
+<em>FXAA深度图抗锯齿效果</em>
+</center>
+</figure>
+
+1. 由于深度图本身的问题, 可以看到显示器边界线并不直. 
+2. 抖动的问题任然存在.
+
+### Depth Densification
+参考: https://github.com/facebookresearch/AR-Depth/blob/master/AR-Depth.ipynb
+计算深度图的边界: soft_edge
+<figure class="image">
+<img src="rc/edge_00015.png">
+<em><center>与彩色图片做边界对齐结果</center></em>
+</figure>
+
+计算图像的边界: hard_edge
+以depth作为初始值, 构建最小二乘问题:
+* 当前帧depth的约束
+* 前几帧depth的约束(最好是重投影)
+* smooth约束
+
+结果:
+<figure class="image">
+<img src="rc/depth_refine_res1.png">
+<em><center>参考相机图片做深度图细化的结果</center></em>
+</figure>
+
+
+算法移植(GPU):
+将solver的方式转化为filter的方式, 在GPU上实现. filter权重的计算.
+
+待优化项:
+1. 当图像边界不明显, 且周围有干扰时, 可能会将原来很强的depth边界给剔除掉.
+    ![](rc/depth_edge_dispared.png)
+
+2. 抖动优化.
+
+### Bialterial Solver & Filtering
+以彩色图片做为参考, 对深度图做时域和空域的滤波.
+参考: https://github.com/poolio/bilateral_solver/blob/master/notebooks/bilateral_solver.ipynb
+https://github.com/kuan-wang/The_Bilateral_Solver
+
+## 一些其他产品样例
+1. [unity ios arkit 遮挡样例](https://blogs.unity3d.com/2020/06/24/ar-foundation-support-for-arkit-4-depth/)
+    unity对于depth应该也有处理, 其api中开放了一个参数[EnvironmentDepthMode](https://docs.unity3d.com/Packages/com.unity.xr.arsubsystems@4.1/api/UnityEngine.XR.ARSubsystems.EnvironmentDepthMode.html)分为三个等级: `Fastest`, `Medium`, `Best`.
