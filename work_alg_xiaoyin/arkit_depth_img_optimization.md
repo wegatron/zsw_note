@@ -77,10 +77,23 @@ Google Depth api: 对深度图做抗锯齿, 简单快速, 但无法解决抖动�
 </figure>
 
 
-算法移植(GPU):
-将solver的方式转化为filter的方式, 在GPU上实现. filter权重的计算.
+#### 性能优化
+1. 将solver的方式转化为filter的方式, 在GPU上实现.
+  使用filter的方式需要较大的滤波半径, 且效果与solver相比差很多.
+  <figure class="image">
+  <img src="rc/depth_img_edge_filter.png">
+  <em><center>solver(左)和filter(右)结果对比</center></em>
+  </figure>
 
-待优化项:
+2. 减少待优化量
+  事实上我们仅需要对深度图的edge区域进行深度优化(抗锯齿)
+  <figure class="image">
+  <img src="rc/depth_edge_area.png" width=300>
+  <img src="rc/depth_edge_partial_solve.png">
+  <em><center>深度图边界(上). solver完整结果(左下)和只优化深度图边界(右下)的对比</center></em>
+  </figure>
+
+### 效果调优
 1. 当图像边界不明显, 且周围有干扰时, 可能会将原来很强的depth边界给剔除掉.
     ![](rc/depth_edge_dispared.png)
 
