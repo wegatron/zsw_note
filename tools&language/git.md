@@ -128,5 +128,16 @@ reference: https://git-scm.com/docs/git-submodule
         ```
     3. 若上一步成功, 则将之前的`svn`删除, 将`tmp`改为`svn`. 然后切换到`svn`, 提交到svn.
 
+* 其他常用操作
+    1. 删除一个分支上的某些git commit
+    ```bash
+    git rebase -i <commit-hash> # 将pick改为drop
+    ```
+
+    2. 直接rebase到同源的一个分支
+    ```bash
+    git rebase <branch_name>
+    ```
+
 ## Reference
 [Git合并指定commit到当前分支](https://www.jianshu.com/p/3d3275e0035c)
