@@ -93,6 +93,10 @@ Google Depth api: 对深度图做抗锯齿, 简单快速, 但无法解决抖动�
   <em><center>深度图边界(上). solver完整结果(左下)和只优化深度图边界(右下)的对比</center></em>
   </figure>
 
+#### 移植
+使用[MPSImageSobel](https://developer.apple.com/documentation/metalperformanceshaders/mpsimagesobel)来做图像梯度计算.
+使用[MPSImageCanny](https://developer.apple.com/documentation/metalperformanceshaders/mpsimagecanny)来做边缘检测, 测试所需时间. 参考ARkit Depth fog的代码.
+
 ### 效果调优
 1. 当图像边界不明显, 且周围有干扰时, 可能会将原来很强的depth边界给剔除掉.
     ![](rc/depth_edge_dispared.png)

@@ -163,3 +163,119 @@
         ```
 
 ## 文字行间距问题
+
+## Text occlusion
+在更新时将深度图数据获取到并传递到render中：
+```c++
+MRESULT CQVETTextRenderFilterOutputStreamImpl::UpdateFrameBuffer()
+{
+    // ...
+    auto depth = pTrack->GetParentTrack()->GetDepth();
+    m_hTextDrawer->setDepth(depth);
+    // ...
+}
+MVoid CQEVTTextRenderCommon::setDepth(void *depth)
+{
+    mpDepth = depth;
+}
+```
+
+由于纹理不支持float32, 所以研究了render engine的[纹理管理使用机制](xy_render_engine.md).
+故而, 我应该只需要对texture的创建进行扩展, 使其支持float32即可, 对其他部分不影响.
+
+得到shader program:
+```c++
+GLint	QGTSpriteRender::createProgram(void** ppProgram, QGTprogramDesc* pDesc)
+{
+	QGTshadeProgram* pProgram = (QGTshadeProgram*)MMemAlloc(MNull,sizeof(QGTshadeProgram));
+	if (NULL == pProgram)
+		return GL_OUT_OF_MEMORY;
+	MMemSet(pProgram, 0, sizeof(QGTshadeProgram));
+	*ppProgram = pProgram;
+
+	GLuint program = glCreateProgram(); // !!!!!!!!!!
+```
+
+将深度图作为纹理添加到绘制中:
+```c++
+CQEVTTextRenderCommon::renderTo()
+{
+
+    if(hasText && mpTextRenders[0]){
+        Array<Sptr<TextureWP>> allTexs; // add depth map as texture
+        // ...
+        for (int i = layerCnt - 1; i >= 0; i--) {
+            CHECK_QREPORT_RET(mpTextRenders[i]->bindTextures(allTexs));
+        }   
+    }
+}
+```
+
+```c++
+MHandle CQVETGLESTexture::CreateTextureWithImage(MHandle hGLContext,
+									MBITMAP* pImage, MDWord dwColorSpace)
+
+TextureWP::TextureWP(void* pContext, const BitmapRGBA8& source) {
+    if(!source.isEmpty()){
+        MBITMAP tempMap = ToMBITMAP(source);
+        mTexHandle = CQVETGLTextureUtils::CreateTextureWithImage(pContext, &tempMap, MV2_COLOR_SPACE_RGB32);
+    }
+}
+```
+
+修改fragment shader实现occlusion:
+```c++
+CQEVTTextRenderCommon::prepareRender()
+{
+    makeShaderDesc(mTextStyleAnimate, mTextShader)
+    {
+        // 在此处更新shader
+        static const char* fragShader_derivatives_enable = {...;
+        static const char* fragShader_main = "(";
+
+        auto& samplers = shaderConfig.samplerNames;
+        samplers.clear();
+        samplers.push_back("u_sampler0");
+    }
+}
+```
+
+
+method by jinkuang:
+```c++
+#if defined(__IPHONE__ZZZ)
+            auto depthMap = *reinterpret_cast<CVPixelBufferRef*>(mpDepth);
+            CVPixelBufferLockBaseAddress(depthMap, CVPixelBufferLockFlags(0));
+            auto width = CVPixelBufferGetWidth(depthMap);
+            auto height = CVPixelBufferGetHeight(depthMap);
+            auto yBaseAddress = CVPixelBufferGetBaseAddressOfPlane(depthMap, 0);
+            auto yBytesPerRow = CVPixelBufferGetBytesPerRowOfPlane(depthMap, 0);
+            auto yLength = yBytesPerRow * height;
+            void* pTexData = CVPixelBufferGetBaseAddress(depthMap);
+            
+            static GLuint texId = 0;
+            if (0 == texId) {
+                glGenTextures(1, &texId);
+                glBindTexture(GL_TEXTURE_2D, texId);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            }
+            glBindTexture(GL_TEXTURE_2D, texId);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, pTexData);
+            
+//            CVOpenGLESTextureCacheRef
+//            CVOpenGLESTextureRef
+//            CVMetalTextureCacheRef
+//            CVMetalTextureRef
+            
+            // copy and bind data to texture
+            std::vector<float> depth_data(yLength/4+1); // add extra 1 float for safty
+            MMemCpy(depth_data.data(), yBaseAddress, yLength);
+            CVPixelBufferUnlockBaseAddress(depthMap, CVPixelBufferLockFlags(0));
+            int texture_id =allTexs.size();
+            
+            // create texture and bind texture
+            //glGenTextures();
+            
+#endif
+```
