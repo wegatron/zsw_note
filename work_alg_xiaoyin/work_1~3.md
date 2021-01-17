@@ -1,8 +1,15 @@
 ## 2021.1
-- [ ] 文字demo 1~2天
+- [x] 文字效果接入
     接入decode得到的深度纹理, 设置文字深度, 实现遮挡效果.
     UpdateFrameBuffer()函数中获取当前深度, 并设置给textRender.
     textRender中对于深度值大于某个值的fragment discard掉即可.
+
+- [ ] libqvar
+    支持双摄, 以及错误码返回
+
+- [ ] fiting支持
+
+- [ ] rendering engine更新
 
 
 - [ ] 算法移植 2~3天

@@ -56,7 +56,6 @@ RealityKit provides photo-realistic rendering, camera effects, animations, physi
 Lidar 60HZ
 Front depth image 15HZ
 
-
 ## AR相关的信息、资料
 * [Spark AR Studio](https://sparkar.facebook.com/ar-studio/)
     face book的AR 滤镜制作/设计工具(无需写代码)
@@ -65,6 +64,16 @@ Front depth image 15HZ
 
 * [ARCore Depth API2](https://www.infoq.com/news/2020/06/ARCore-depth-api-released/)
     两个project: [lines-of-play](https://github.com/googlecreativelab/lines-of-play), [arcore-depth-lab](https://github.com/googlesamples/arcore-depth-lab/)
+
+
+## 其他
+双摄深度图判断:
+```c++
+AVCapturePhotoOutput* photoOutput = [[AVCapturePhotoOutput alloc] init];
+ if ([photoOutput isDepthDataDeliverySupported]) {
+            
+       }
+```
 
 ## Reference
 🍅[Explore Arkit4 Notes](https://www.wwdcnotes.com/notes/wwdc20/10611/)
