@@ -139,5 +139,19 @@ reference: https://git-scm.com/docs/git-submodule
     git rebase <branch_name>
     ```
 
+## svn patch 制作
+```bash
+svn revert textdraw/source/qevttextrender_base.h textdraw/source/qevttextrender_base.cpp
+svn up
+cp textdraw/source/qevttextrender_base.h textdraw/source/qevttextrender_base.h.bak
+cp textdraw/source/qevttextrender_base.cpp textdraw/source/qevttextrender_base.cpp.bak
+svn up -r25497 textdraw/source/qevttextrender_base.h textdraw/source/qevttextrender_base.cpp
+cp textdraw/source/qevttextrender_base.h.bak textdraw/source/qevttextrender_base.h
+cp textdraw/source/qevttextrender_base.cpp.bak textdraw/source/qevttextrender_base.cpp
+svn diff textdraw/source/qevttextrender_base.h textdraw/source/qevttextrender_base.cpp > zsw.patch
+svn revert textdraw/source/qevttextrender_base.h textdraw/source/qevttextrender_base.cpp
+svn up -r25497 textdraw/source/qevttextrender_base.h textdraw/source/qevttextrender_base.cpp
+```
+
 ## Reference
 [Git合并指定commit到当前分支](https://www.jianshu.com/p/3d3275e0035c)
