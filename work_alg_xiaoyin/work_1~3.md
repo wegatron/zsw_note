@@ -36,7 +36,8 @@
 - [ ] 算法移植
     - [x] 使用Metal Performance Shader内置Filter计算中间数据
         - [x] MPSImageCanny、MPSImageScale
-        - [ ] 利用其余的Filter入MPSImageSobel 计算既符合color image又符合depth image的edge
+        - [x] 利用其余的Filter入MPSImageSobel 计算既符合color image又符合depth image的edge
+        - [x] MPSGuidedFilter试验, 达不到要求
         - [ ] 构建方程使用共轭梯度法求解
         - [ ] 测试系统的光流跟踪
         - [ ] 利用光流跟踪加入时序平滑项
