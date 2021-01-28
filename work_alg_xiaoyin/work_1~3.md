@@ -1,9 +1,16 @@
-## 2021.1
+## 总体进度
+### 文字相关
 - [x] 文字效果接入
     接入decode得到的深度纹理, 设置文字深度, 实现遮挡效果.
     UpdateFrameBuffer()函数中获取当前深度, 并设置给textRender.
     textRender中对于深度值大于某个值的fragment discard掉即可.
 
+- [ ] 单字底图bug解决
+
+- [ ] 文字带深度的code update
+- [ ] 文字带深度渲染时使用Metal崩溃问题
+
+### iOS Lidar
 - [ ] libqvar
     - [ ] 支持双摄
     - [x] 支持错误码返回
@@ -37,7 +44,6 @@
     - [x] 使用Metal Performance Shader内置Filter计算中间数据
         - [x] MPSImageCanny、MPSImageScale
         - [x] 利用其余的Filter入MPSImageSobel 计算既符合color image又符合depth image的edge
-        - [x] MPSGuidedFilter试验, 达不到要求
         - [ ] 构建方程使用共轭梯度法求解
         - [ ] 测试系统的光流跟踪
         - [ ] 利用光流跟踪加入时序平滑项
@@ -48,3 +54,9 @@
     - [ ] 测试
 
 - [ ] 深度图预览的colormap
+
+
+## Daily Work
+* 2021.1.28
+    - [ ] 获取MPSImage的结果数据, 完成swift调用c++代码
+    - [ ] 单字底图bug修复

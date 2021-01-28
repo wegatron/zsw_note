@@ -1,8 +1,8 @@
 ## 深度图优化目标
-### 抖动处理
+### 闪烁处理
 <figure class="image">
   <img src="rc/1.png">
-  <em><center>深度图抖动</center></em>
+  <em><center>深度图闪烁</center></em>
 </figure>
 
 对于相对静态的场景, 相邻帧confidence为high的深度像素任然会出现抖动(差异很大)的情况(如下图所示). 存在以下矛盾:
