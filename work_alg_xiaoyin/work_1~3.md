@@ -56,7 +56,14 @@
 - [ ] 深度图预览的colormap
 
 
-## Daily Work
+## Daily Work Log
+* 2021.1.27
+    - [x] 文字字间距问题测试, 推动模版以及app代码修改修改
 * 2021.1.28
     - [ ] 获取MPSImage的结果数据, 完成swift调用c++代码
+    - [ ] trunk depth代码合并
     - [ ] 单字底图bug修复
+        - [x] Xiaoying app compile pass & 字幕模版测试下载正常
+        - [x] 换行后不正常问题
+        - [ ] 对于单字底图固定字间距
+    - [ ] 面试x2
