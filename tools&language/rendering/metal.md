@@ -5,3 +5,9 @@
 [小demo](https://www.jianshu.com/u/f141ef15ba07)
 [Metal By Example](https://metalbyexample.com/the-book/)
 [Metal By Tutorial](https://www.raywenderlich.com/books/metal-by-tutorials/v2.0/chapters/11-tessellation-terrains#toc-chapter-014-anchor-007)
+
+
+## 使用Metal创建自定义的Filter
+[Metal Filter](https://metalbyexample.com/fundamentals-of-image-processing)
+https://avinashselvam.medium.com/hands-on-metal-image-processing-using-apples-gpu-framework-8e5306172765
+https://github.com/MetalPetal/MetalPetal/blob/master/Frameworks/MetalPetal/Kernels/MTIMPSKernel.m

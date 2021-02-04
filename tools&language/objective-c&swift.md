@@ -15,23 +15,54 @@
     @autoreleasepool { ... }
     ```
 
-## Objective-c
-使用命令行编译:
-example code:
+## 深入理解 Objective-c
+使用命令行编译, 理解objective-c的类, example code:
 ```objective-c
-#include <Foundation/Foundation.h>
-#include <stdio.h>
 #include <AppKit/AppKit.h>
 int main (int argc, char **argv) {
-    NSObject *obj = [[NSObject alloc] init];
-    NSView *view = [[NSView alloc] init];
-    fprintf(stderr, "Object: %s\n", [[obj description] UTF8String]);
-    fprintf(stderr, "Object: %s\n", [[view description] UTF8String]);
+    @autoreleasepool {
+        // 创建一个 NSObject 的实例对象
+        NSObject *obj = [[NSObject alloc] init];
+    }
     return 0;
 }
 ```
+
+```objective-c
+#include <AppKit/AppKit.h>
+
+@interface HHStaff : NSObject {
+    NSString *name;
+}
+
+- (void)doInstanceStaffWork; // 对象方法
++ (void)doClassStaffWork;    // 类方法
+
+@end
+
+@interface HHManager : HHStaff {
+    NSInteger officeNum;
+}
+
+- (void)doInstanceManagerWork; // 对象方法
++ (void)doClassManagerWork;    // 类方法
+@end
+
+int main (int argc, char **argv) {
+    @autoreleasepool {
+        // 创建实例对象
+        HHManager *mgr = [[HHManager alloc] init];
+    }
+    return 0;
+}
+```
+
 ```bash
+# 编译
 gcc -arch arm64 -g main.m -lobjc -framework Foundation -framework Cocoa -framework AppKit -o main
+
+# 将objective-c 转化为c++
+clang -rewrite-objc main.m -o main.cpp
 ```
 
 
@@ -41,5 +72,5 @@ gcc -arch arm64 -g main.m -lobjc -framework Foundation -framework Cocoa -framewo
 [objective-c turtorial](https://www.tutorialspoint.com/objective_c/objective_c_memory_management.htm)
 [ios application](https://www.tutorialspoint.com/ios/ios_first_iphone_application.htm)
 [Objective-C Property Attributes](https://academy.realm.io/posts/tmi-objective-c-property-attributes/#:~:text=Strong%20just%20means%20you%20have,and%20released%20back%20into%20memory.)
-
+[深入理解 Objective-C Class](https://www.jianshu.com/p/241e8be676a9)
 [Swift Tour](https://docs.swift.org/swift-book/GuidedTour/GuidedTour.html)
