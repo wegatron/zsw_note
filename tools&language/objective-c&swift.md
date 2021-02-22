@@ -1,5 +1,23 @@
 # iOS Objective-C And Swift
 
+## Objective-C中的基本概念
+### Interface & Implementation
+```objective-c
+@import 
+#import
+#include
+@interface MyObject : NSObject {
+    int memberVar1; // 实体变量
+    id  memberVar2;
+}
+@property (nonatomic, strong) id<protocols> memberName; // 表示遵循protocol
+
++(return_type) class_method; // 类方法
+
+-(return_type) instance_method1; // 实例方法
+@end
+```
+
 ## Objective-C Memory Management
 通过NSObject实现引用计数, 以两种方式来管理.
 * "Manual Retain-Release" or MRR (手动)
@@ -69,7 +87,9 @@ clang -rewrite-objc main.m -o main.cpp
 ## Swift
 
 ## reference
+[The Objective-C Language](https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ObjectiveC/Chapters/ocDefiningClasses.html#//apple_ref/doc/uid/TP30001163-CH12-SW2)
 [objective-c turtorial](https://www.tutorialspoint.com/objective_c/objective_c_memory_management.htm)
+[What does id<…> mean in Objective-C?](https://stackoverflow.com/questions/19812515/what-does-id-mean-in-objective-c)
 [ios application](https://www.tutorialspoint.com/ios/ios_first_iphone_application.htm)
 [Objective-C Property Attributes](https://academy.realm.io/posts/tmi-objective-c-property-attributes/#:~:text=Strong%20just%20means%20you%20have,and%20released%20back%20into%20memory.)
 [深入理解 Objective-C Class](https://www.jianshu.com/p/241e8be676a9)

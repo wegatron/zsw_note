@@ -33,3 +33,6 @@ example in Eigen, 在矩阵assignment时, 使用static_assert判断矩阵大小�
 ```c++
 EIGEN_STATIC_ASSERT_SAME_MATRIX_SIZE(ActualDstTypeCleaned,Src)
 ```
+
+## c++ 编程规范
+[华为方舟编译规范](https://www.bookstack.cn/read/openarkcompiler/d2d6358058bab8c5.md)
