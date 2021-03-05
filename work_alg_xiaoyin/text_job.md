@@ -161,8 +161,21 @@
         };
         typedef Bitmap<MByte,4> BitmapRGBA8;
         ```
+6.  文字排版调整
+    诺底图只有一个, 则相邻两个文字中心之间的距离等于底图的宽度; 若底图多余一个则相邻两个文字中心之间的距离等于textRect_0与textRect_1之间的中心距离.
 
-## 文字行间距问题
+## 文字字间距&行间距问题
+__基本原理__: 除了tracking, 其他均为像素点的值(相对于frameHeight). tracking则时相对于font size.
+* graphPointSize(字号): 定义了文字大小.
+    AE导出为: fontSize/layerHeight
+    引擎库中使用: 根据当前frameSize做一个缩放  m_Settings.fGraphPointSize * frameHeight
+* Leading(行间距): 定义了两行之间基线的距离的像素值.
+    AE导出为: leading/layerHeight
+    引擎库中使用: 根据当前的frameSize做一个缩放  leading * viewportHeight
+* Tracking(字间距): 定义了两个字符之间的空隙的像素值.
+    AE导出为: tracking
+    引擎库中使用: tracking * mTextContext.pointSize * 0.001
+
 
 ## Text occlusion
 在更新时将深度图数据获取到并传递到render中：

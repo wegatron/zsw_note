@@ -54,7 +54,9 @@ Google Depth api: 对深度图做抗锯齿, 简单快速, 但无法解决抖动�
 </figure>
 
 1. 由于深度图本身的问题, 可以看到显示器边界线并不直. 
-2. 抖动的问题任然存在.
+2. 闪烁的问题任然存在.
+
+使用内置的抗锯齿方法参考MetalBasic3D
 
 ### Depth Densification
 参考: https://github.com/facebookresearch/AR-Depth/blob/master/AR-Depth.ipynb
@@ -112,3 +114,9 @@ https://github.com/kuan-wang/The_Bilateral_Solver
 ## 一些其他产品样例
 1. [unity ios arkit 遮挡样例](https://blogs.unity3d.com/2020/06/24/ar-foundation-support-for-arkit-4-depth/)
     unity对于depth应该也有处理, 其api中开放了一个参数[EnvironmentDepthMode](https://docs.unity3d.com/Packages/com.unity.xr.arsubsystems@4.1/api/UnityEngine.XR.ARSubsystems.EnvironmentDepthMode.html)分为三个等级: `Fastest`, `Medium`, `Best`.
+
+2. [FXAA 解析](http://blog.simonrodriguez.fr/articles/30-07-2016_implementing_fxaa.html#fn2)
+   [FXAA 对应源码](https://github.com/kosua20/Rendu/blob/master/resources/common/shaders/screens/fxaa.frag)
+   [FXAA 加速版本](https://github.com/mattdesl/glsl-fxaa)
+
+3. [Metal 中的各种抗锯齿方案](https://www.programmersought.com/article/17475448461/)
