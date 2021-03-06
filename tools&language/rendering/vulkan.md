@@ -91,7 +91,7 @@
     
     * Images, 相对复杂包数据类型以及内存排布等信息
         *refer to book p85, texture.cpp*
-        不难发现, vulkan对内存管理提供了更精细的接口.
+        不难发现, vulkan对内存管理提供了更精细的控制.
         ```c++
         VkImageCreateInfo imageCreateInfo = vks::initializers::imageCreateInfo();
         imageCreateInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -102,7 +102,7 @@
         imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
         imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         // Set initial layout of the image to undefined
-        /* layout 表示该image的设计意图, 有:
+        /* layout 表示该image的内存布局, 有:
             VK_IMAGE_LAYOUT_UNDEFINED (在使用之前必须转换为其他layout, 
                 在创建时必须使用它或VK_IMAGE_LAYOUT_PREINITIALIZED)
             VK_IMAGE_LAYOUT_GENERAL (几乎任意使用)   
