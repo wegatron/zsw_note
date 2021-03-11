@@ -94,3 +94,6 @@ clang -rewrite-objc main.m -o main.cpp
 [Objective-C Property Attributes](https://academy.realm.io/posts/tmi-objective-c-property-attributes/#:~:text=Strong%20just%20means%20you%20have,and%20released%20back%20into%20memory.)
 [深入理解 Objective-C Class](https://www.jianshu.com/p/241e8be676a9)
 [Swift Tour](https://docs.swift.org/swift-book/GuidedTour/GuidedTour.html)
+[🏂🏽 Objective-C MemoryMangement](https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/MemoryMgmt/Articles/mmRules.html#//apple_ref/doc/uid/20000994-BAJHFBGH)
+[🏂🏽 Objective-C MemoryManagemegt of Core Fundation](https://developer.apple.com/library/archive/documentation/CoreFoundation/Conceptual/CFMemoryMgmt/Concepts/Ownership.html#//apple_ref/doc/uid/20001148-CJBEJBHH)
+[🐿 禅与 Objective-C 编程艺术](https://objc-zen-book.books.yourtion.com/Chapter02/03-nil-and-bool-checks.html)

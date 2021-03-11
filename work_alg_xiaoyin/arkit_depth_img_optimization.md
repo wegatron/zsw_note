@@ -55,7 +55,7 @@ Google Depth api: 对深度图做抗锯齿, 简单快速, 但无法解决抖动�
 
 1. 由于深度图本身的问题, 可以看到显示器边界线并不直. 
 2. 闪烁的问题任然存在.
-
+metal
 使用内置的抗锯齿方法参考MetalBasic3D
 
 ### Depth Densification

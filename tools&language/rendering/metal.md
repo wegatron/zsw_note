@@ -7,9 +7,9 @@
 [Metal By Example](https://metalbyexample.com/the-book/)
 [Metal By Tutorial](https://www.raywenderlich.com/books/metal-by-tutorials/v2.0/chapters/11-tessellation-terrains#toc-chapter-014-anchor-007)
 
-
 ## 使用Metal kernel function 实现图像滤波
 [Metal Filter](https://metalbyexample.com/fundamentals-of-image-processing)
 [metal kernel function简单实例](https://avinashselvam.medium.com/hands-on-metal-image-processing-using-apples-gpu-framework-8e5306172765)
 [MetalPetal kernel function Filters library](https://github.com/MetalPetal/MetalPetal/blob/master/Frameworks/MetalPetal/Kernels/MTIMPSKernel.m)
 [🍒 Metal - 11 GPGPU 通用计算（Compute Shader）](https://www.uiimage.com/post/blog/metal/metal-11-generic-purpose-computing/)
+[编译metallib](https://developer.apple.com/documentation/metal/libraries/building_a_library_with_metal_s_command-line_tools?language=objc)
