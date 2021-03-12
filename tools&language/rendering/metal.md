@@ -6,6 +6,7 @@
 [小demo](https://www.jianshu.com/u/f141ef15ba07)
 [Metal By Example](https://metalbyexample.com/the-book/)
 [Metal By Tutorial](https://www.raywenderlich.com/books/metal-by-tutorials/v2.0/chapters/11-tessellation-terrains#toc-chapter-014-anchor-007)
+[资深程序员的Metal入门教程总结](https://www.cnblogs.com/qcloud1001/p/9890961.html)
 
 ## 使用Metal kernel function 实现图像滤波
 [Metal Filter](https://metalbyexample.com/fundamentals-of-image-processing)

@@ -79,7 +79,7 @@ int main (int argc, char **argv) {
 # 编译
 gcc -arch arm64 -g main.m -lobjc -framework Foundation -framework Cocoa -framework AppKit -o main
 
-# 将objective-c 转化为c++
+# 将objective-c 转化为c++metal
 clang -rewrite-objc main.m -o main.cpp
 ```
 
