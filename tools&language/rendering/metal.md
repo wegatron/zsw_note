@@ -14,3 +14,23 @@
 [MetalPetal kernel function Filters library](https://github.com/MetalPetal/MetalPetal/blob/master/Frameworks/MetalPetal/Kernels/MTIMPSKernel.m)
 [🍒 Metal - 11 GPGPU 通用计算（Compute Shader）](https://www.uiimage.com/post/blog/metal/metal-11-generic-purpose-computing/)
 [编译metallib](https://developer.apple.com/documentation/metal/libraries/building_a_library_with_metal_s_command-line_tools?language=objc)
+
+## Metal的一些问题
+
+1. 在metal中当纹理的存储数据type与纹理在mtlfunction中使用的type不完全一致时, 而外的开销有多大?
+    比如新建纹理时所用的pixel format为:`MTLPixelFormatRGBA8Unorm`, 而在mtlfunction使用时可以为`texture2d<half, access::read>`或者`depth2d<float, access::read>`. 哪种方式效率更快?
+
+2. 在texture2d不支持uint8为什么?
+    参考《Metal Shading Language Specification》
+    >For texture types (except depth texture types), T can be half, float, short, ushort, int, or uint. For depth texture types, T must be float.
+
+3. 深度纹理不支持写入, 为什么?
+    ```c++
+    kernel void average_blur(depth2d<float, access::read> input [[texture(0)]],
+                          depth2d<float, access::read_write> output [[texture(1)]],
+                          uint2 id [[thread_position_in_grid]]);
+    ```
+    报错:
+    ```
+    "Depth textures must have access qualifier access::read or access::sample"
+    ```
