@@ -139,6 +139,28 @@ reference: https://git-scm.com/docs/git-submodule
     git rebase <branch_name>
     ```
 
+    3. 将多个git提交合并
+    ```bash
+    git rebase -i <base_hash>
+    # 第一行 r, 其余选择s
+    ```
+
+    4. 终止git rebase
+    ```bash
+    git rebase --abort
+    ```
+
+## git rebase
+```bash
+pick：保留该commit（缩写:p）
+reword：保留该commit，但我需要修改该commit的注释（缩写:r）
+edit：保留该commit, 但我要停下来修改该提交(不仅仅修改注释)（缩写:e）
+squash：将该commit和前一个commit合并（缩写:s）
+fixup：将该commit和前一个commit合并，但我不要保留该提交的注释信息（缩写:f）
+exec：执行shell命令（缩写:x）
+drop：我要丢弃该commit（缩写:d）
+```
+
 ## svn patch 制作
 ```bash
 svn revert textdraw/source/qevttextrender_base.h textdraw/source/qevttextrender_base.cpp
