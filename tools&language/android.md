@@ -1,25 +1,171 @@
-## Android app build configuration
-build tools
+# Android Develop
+## Android构建工具
 * gradle
-    An advanced build toolkit, to automate and manage the build process, while allowing you to define flexible custom build configurations, using DSL language.
+    一个高级的构建工具, 使用DSL语言来组织构建配置.
+    >An advanced build toolkit, to automate and manage the build process, while allowing you to define flexible custom build configurations, using DSL language.
 * android plugin for gradle
-    Works with the build toolkit to provide processes and configurable settings that are specific to building and testing Android applications.
+    一个android专用的插件, 与gradle一起用来构建和测试android应用.
+    >Works with the build toolkit to provide processes and configurable settings that are specific to building and testing Android applications.
 
 
 文件目录
 ```
 MyApp/
-├── build.gradle # defines build configurations that apply to all modules in your project
-├── settings.gradle # tells Gradle which modules it should include when building your app
-├── gradle.properties # configure project-wide Gradle settings, such as the Gradle daemon's maximum heap size.
-├── local.properties # configures local environment properties for the build system
+├── build.gradle #项目的全局配置
+├── settings.gradle #用于指定项目中所有需要引入的模块(需要加入编译的模块)
+├── gradle.properties #全局的属性配置, 比如Gradle daemon's maximum heap size.
+├── local.properties #用于指定本地的编译环境, 如android sdk的路径
 └── app
     ├── build.gradle # defines build configurations of module
     └── ...(source code)
 ```
 
-* build.gradle
-    `buildscript` block to define the Gradle repositories and dependencies that are common to ll modules in the project.
+### build.gradle文件详解
+[@Configure your build](https://developer.android.com/studio/build#module-level)
+项目的build.gradle文件:
+```json
+// 本文件一般自动生成
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
+    /**
+     * repositories指定用来搜索和下载依赖的仓库.
+     * 常用的包括: JCenter, Maven Central, and Ivy.
+     */
+    repositories {
+       google()
+       jcenter()
+    }
+
+    /**
+     * 依赖的gradle版本
+     * version 4.1.0 as a classpath dependency.
+     */
+    dependencies {
+        classpath 'com.android.tools.build:gradle:4.0.0'
+    }
+}
+
+/**
+ * allprojects是应用到所有模块的配置
+ */
+allprojects {
+    repositories {
+        google()
+        jcenter()
+    }
+}
+```
+
+APP的gradle文件:
+```json
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 29
+    ndkVersion '21.2.6472646'
+    
+    defaultConfig {
+        /**
+         * applicationId用于指定唯一的用来发布时的id.
+         * However, your source code should still reference the package name
+         * defined by the package attribute in the main/AndroidManifest.xml file.
+         */
+        applicationId 'com.android.gl2jni'
+        minSdkVersion 14
+        targetSdkVersion 28
+        externalNativeBuild {
+            cmake {
+                // Available arguments are inside ${SDK}/cmake/.../android.toolchain.cmake file
+                arguments '-DANDROID_STL=c++_static'
+            }
+        }
+        versionName '1.0.0'
+        versionCode 1
+    }
+
+    /**
+     * 不同编译版本的设置
+     */
+    buildTypes {
+        release {
+            minifyEnabled = false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'),
+                          'proguard-rules.pro'
+        }
+
+        debug {
+            minifyEnabled = false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'),
+        }                    'proguard-rules.pro'
+
+    }
+    externalNativeBuild {
+        cmake {
+            version '3.10.2'
+            path 'src/main/cpp/CMakeLists.txt'
+        }
+    }
+}
+```
+
+### AndroidManifest.xml详解
+启动时候的状态配置, 以及依赖的opengles配置. [@Android构建清单](https://developer.android.com/guide/topics/manifest/manifest-intro?hl=zh-cn)
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.android.gl2jni">
+  <uses-feature android:glEsVersion="0x00020000"/>
+  <application
+      android:allowBackup="false"
+      android:fullBackupContent="false"
+      android:icon="@mipmap/ic_launcher"
+      android:label="@string/gl2jni_activity">
+    <activity android:name="GL2JNIActivity"
+              android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+              android:launchMode="singleTask"
+              android:configChanges="orientation|keyboardHidden">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity>
+  </application>
+</manifest>
+```
+
+
+### 调试或运行版本
+[@调试运行配置](https://developer.android.com/studio/run)
+默认情况下, 在您点击 Run 后, Android Studio 会构建应用的调试版本, 不过这仅供在开发期间使用. 
+
+如要更改 Android Studio 使用的构建变体, 请在菜单栏中依次选择 Build > Select Build Variant. 
+
+对于不含原生/C++ 代码的项目, Build Variants 面板有两列：Module 和 Active Build Variant. 模块的 Active Build Variant 值决定了 IDE 部署到连接的设备并显示在编辑器中的构建变体.
+
+![](../rc/android-build-variants.png)
+
+## NDK和SDK
+* android sdk (Android Software Development Kit, 即android软件开发工具包
+    可以说只要你使用java去开发Android这个东西就必须用到. 他包含了SDK Manager 和 AVD Manage, 对于android系统的一些开发版本的管理以及模拟器管理. 它只能运行纯java程序, 有了它模拟器才可以使用. 
+* ndk (Native Development Kit)跟sdk差不多的是它也是一个开发工具包. 
+    用它开发c/c++是很方便的. 他有一个强大的编译集合. Java调C、C++(jni接口), 是一些java如何调C的代码. 它会把C代码编译成一个.SO的动态库, 通过jni接口用java代码去调用它, 有了它我们可以直接在android代码中去添加C代码.
+
+    __Android NDK从r13起, 默认使用Clang进行编译.__ [@Android NDK Clang迁移](https://zhuanlan.zhihu.com/p/27470060)
+    但是暂时也没有把GCC删掉,Google会一直等到libc++(Clang的c++标准库实现, gcc使用libstdc++)足够稳定后删掉GCC.
+
+## Java和C++
+
+
+## 简单的Android应用
+这里以helo-gl2为例[@Android demo项目(包括opengl es)](https://github.com/android/ndk-samples.git)
+
+
+## Profile调试工具
 
 ## Reference
 [Configure your build](https://developer.android.com/studio/build#module-level)
+[调试运行配置](https://developer.android.com/studio/run)
+[Android构建清单](https://developer.android.com/guide/topics/manifest/manifest-intro?hl=zh-cn)
+[Android NDK Clang迁移](https://zhuanlan.zhihu.com/p/27470060)
+[Android demo项目(包括opengl es)](https://github.com/android/ndk-samples.git)
