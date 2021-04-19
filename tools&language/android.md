@@ -160,8 +160,10 @@ android {
 ## 简单的Android应用
 这里以helo-gl2为例[@Android demo项目(包括opengl es)](https://github.com/android/ndk-samples.git)
 
+如何添加一些UI组件, 用于作为输入参数?
 
-## Profile调试工具
+## Profile调试工具&性能工具
+
 
 ## Reference
 [Configure your build](https://developer.android.com/studio/build#module-level)

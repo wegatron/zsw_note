@@ -23,7 +23,8 @@ Selection    Path            Priority   Status
 Press  to keep the current choice[*], or type selection number: 
 ```
 
-## static_assert
+## static assert
+
 ```c++
 static_assert ( bool_constexpr , message )  (since C++11)
 static_assert ( bool_constexpr )    (since C++17)
@@ -32,6 +33,125 @@ static_assert ( bool_constexpr )    (since C++17)
 example in Eigen, 在矩阵assignment时, 使用static_assert判断矩阵大小是否一致:
 ```c++
 EIGEN_STATIC_ASSERT_SAME_MATRIX_SIZE(ActualDstTypeCleaned,Src)
+```
+
+## 编译器优化控制
+
+`__builtin_expect`帮助编译器, 优化分支预判:
+
+```c++
+#if __has_builtin(__builtin_expect)
+#   ifdef __cplusplus
+#      define UTILS_LIKELY( exp )    (__builtin_expect( !!(exp), true ))
+#      define UTILS_UNLIKELY( exp )  (__builtin_expect( !!(exp), false ))
+#   else
+#      define UTILS_LIKELY( exp )    (__builtin_expect( !!(exp), 1 ))
+#      define UTILS_UNLIKELY( exp )  (__builtin_expect( !!(exp), 0 ))
+#   endif
+#else
+#   define UTILS_LIKELY( exp )    (!!(exp))
+#   define UTILS_UNLIKELY( exp )  (!!(exp))
+#endif
+
+// 用法
+if (UTILS_LIKELY(mFreeSpace >= requiredSize)) { ... } else { ... }
+while (UTILS_LIKELY(base)) { ... }
+```
+
+这里`__builtin_expect( !!(expx), true ))` 两次取反, 原因为: 取一次为反, 取两次为正, 保证`!!(exp)`是bool值.
+
+
+`#pragma nounroll` 告诉编译器, 不要展开循环(循环展开可能导致编译结果太大):
+
+```c++
+if (target == GL_UNIFORM_BUFFER || target == GL_TRANSFORM_FEEDBACK_BUFFER) {
+    auto& indexedBuffer = state.buffers.targets[targetIndex];
+    #pragma nounroll // clang generates >1 KiB of code!!
+    for (GLsizei i = 0; i < n; ++i) {
+        #pragma nounroll
+        for (auto& buffer : indexedBuffer.buffers) {
+            if (buffer.name == buffers[i]) {
+                buffer.name = 0;
+                buffer.offset = 0;
+                buffer.size = 0;
+            }
+        }
+    }
+```
+
+## c++ memory model
+* memory_order_seq_cst
+  顺序一致性，也是 __默认__ 的选项，这个选项不允许reorder，那么也会带来一些性能损失.
+* Release-Acquire ordering
+  在这种模型下，store()使用memory_order_release，而load()使用memory_order_acquire。这种模型有两种效果，第一种是可以限制 CPU 指令的重排：
+  * 在store()之前的所有读写操作，不允许被移动到这个store()的后面。
+  * 在load()之后的所有读写操作，不允许被移动到这个load()的前面。
+  除此之外，还有另一种效果：假设 Thread-1 store()的那个值，成功被 Thread-2 load()到了，那么 Thread-1 在store()之前对内存的所有写入操作，此时对 Thread-2 来说，都是可见的。
+* memory_order_relaxed
+  没有任何约束
+
+ [@高并发编程--多处理器编程中的一致性问题(上)](https://zhuanlan.zhihu.com/p/48157076)
+ [@理解 C++ 的 Memory Order](http://senlinzhan.github.io/2017/12/04/cpp-memory-order/)
+
+## 内存布局对齐分配释放
+好处:
+① 减少内存碎片, 提高访问速度.
+② SIMD向量指令如(AVX)需要内存对齐.
+
+BTW, 自主管理内存的好处:
+① 对于频繁申请释放, 可以减少系统调用.
+② 对于online运行的程序, 可以加日志, 方便后续调试或优化.
+
+```c++
+inline void* aligned_alloc(size_t size, size_t align) noexcept {
+    assert(align && !(align & align - 1));
+
+    void* p = nullptr;
+
+    // must be a power of two and >= sizeof(void*)
+    while (align < sizeof(void*)) {
+        align <<= 1u;
+    }
+
+#if defined(WIN32)
+    p = ::_aligned_malloc(size, align);
+#else
+    ::posix_memalign(&p, align, size);
+#endif
+    return p;
+}
+
+inline void aligned_free(void* p) noexcept {
+#if defined(WIN32)
+    ::_aligned_free(p);
+#else
+    ::free(p);
+#endif
+}
+```
+
+## Lock
+SpinLock
+mutex
+condition variable
+
+
+## 模板类的高级设置
+
+```c++
+std::enable_if
+```
+[@游戏引擎开发新感觉！(6) c++17内存管理](https://zhuanlan.zhihu.com/p/96089089)
+
+## 类的一些设置
+```c++
+// Allocators can't be copied
+HeapAllocator(const HeapAllocator& rhs) = delete;
+HeapAllocator& operator=(const HeapAllocator& rhs) = delete;
+
+// Allocators can be moved
+HeapAllocator(HeapAllocator&& rhs) noexcept = default;
+HeapAllocator& operator=(HeapAllocator&& rhs) noexcept = default;
 ```
 
 ## 一些有用的类型
