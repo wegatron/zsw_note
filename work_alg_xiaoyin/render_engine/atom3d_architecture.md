@@ -56,11 +56,6 @@ atom3d
 └── utils
 ```
 
-疑问:
+一些
 1. 
 
-## 主要的设计
-Description包含shader, param(定义了有哪些个参数, 是什么类型), state. 如SimpleRenderEffectDesc.
-Layout 数据
-
-## 一些主要的应用
