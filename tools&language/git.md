@@ -175,5 +175,44 @@ svn revert textdraw/source/qevttextrender_base.h textdraw/source/qevttextrender_
 svn up -r25497 textdraw/source/qevttextrender_base.h textdraw/source/qevttextrender_base.cpp
 ```
 
+
+## git 仓库过大问题
+修改 `~/gitconfig`, 添加如下信息
+```file
+[core] 
+packedGitLimit = 512m 
+packedGitWindowSize = 512m 
+[pack] 
+deltaCacheSize = 2047m 
+packSizeLimit = 2047m 
+windowMemory = 2047m
+```
+
+克隆:
+```bash
+git config --global core.compression 0 # turn off compression
+git clone --depth 1 <repo_URI>
+git fetch --unshallow 
+```
+
+修改`./git/config`
+```
+[remote "origin"]
+    url=<git repo url>
+    fetch = +refs/heads/master:refs/remotes/origin/master
+```
+
+```
+fetch = +refs/heads/master:refs/remotes/origin/master
+```
+
+to
+
+```
+fetch = +refs/heads/*:refs/remotes/origin/*
+```
+
+do fetch again.
+
 ## Reference
 [Git合并指定commit到当前分支](https://www.jianshu.com/p/3d3275e0035c)
