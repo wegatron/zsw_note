@@ -130,6 +130,18 @@ inline void aligned_free(void* p) noexcept {
 }
 ```
 
+### 数据结构的内存排布控制
+
+```c++
+// __attribute__ ((__packed__)) 紧凑式, 不对齐
+
+struct mystruct {
+    int a;
+    char b;
+} __attribute__ ((__packed__));
+// sizeof(mystruct) = 5
+```
+
 ## Lock
 SpinLock
 mutex
@@ -144,6 +156,12 @@ std::enable_if
 [@游戏引擎开发新感觉！(6) c++17内存管理](https://zhuanlan.zhihu.com/p/96089089)
 
 ## 类的一些设置
+
+* 使用`delete`将默认函数删除
+
+* 使用`noexcept`来表示该函数不会产生异常.
+    
+
 ```c++
 // Allocators can't be copied
 HeapAllocator(const HeapAllocator& rhs) = delete;
@@ -153,6 +171,44 @@ HeapAllocator& operator=(const HeapAllocator& rhs) = delete;
 HeapAllocator(HeapAllocator&& rhs) noexcept = default;
 HeapAllocator& operator=(HeapAllocator&& rhs) noexcept = default;
 ```
+
+## 常用的设计模式
+
+* 构造者模式.
+
+    例如, 在filament中每一种资源都有一个自己的构造者, 
+
+    ```c++
+    class UTILS_PUBLIC IndexBuffer : public FilamentAPI {
+        class Builder : public BuilderBase<BuilderDetails> {
+            friend struct BuilderDetails;
+        public:
+            Builder() noexcept;
+            Builder(Builder const& rhs) noexcept;
+            Builder(Builder&& rhs) noexcept;
+            ~Builder() noexcept;
+            Builder& operator=(Builder const& rhs) noexcept;
+            Builder& operator=(Builder&& rhs) noexcept;
+            Builder& indexCount(uint32_t indexCount) noexcept;
+            Builder& bufferType(IndexType indexType) noexcept;
+            IndexBuffer* build(Engine& engine);
+        private:
+            friend class FIndexBuffer;
+        };
+    };
+    ```
+
+    构造者中, 设置完参数后返回该类对的引用, 从而可以连写进行设置, 最红通过build完成构造.
+
+    ```c++
+    // 使用
+    app.ib = IndexBuffer::Builder()
+                    .indexCount(3)
+                    .bufferType(IndexBuffer::IndexType::USHORT)
+                    .build(*engine);
+            
+    ```
+
 
 ## 一些有用的类型
 * std::string_view
