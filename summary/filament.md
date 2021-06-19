@@ -7,21 +7,30 @@ filament整体架构:
 <center>
 <img src="../rc/filament_structure.svg" width=700>
 </center>
-<center><em>filament代码头文件</em></center>
+<center><em>filament主要结构</em></center>
 </figure>
 
+第一层 [工具、example、App]
 * Tools主要是材质或模型的处理优化工具. 比如: 材质编译工具`matc`, 材质编辑器`tungsten`(未有成熟的Release).
-* Frame Graph
-    渲染帧的配置
-* Rendering Data Abstract
-    不同层次渲染数据以及其管理的抽象.
-    * Rendering API Object抽象, 例如: Texture, Buffer, SwapChain, RenderTarget
-    * 其他渲染管理数据的抽象, 如: Light, LightManager, Camera, Viewport, Material ... / Scene, Engine
+
+第二层 [用户接口]
+* Engine, 虚拟渲染资源创建销毁管理, 并利用JobSystem, 发送命令到下一层.
+* Virtual Rendering Resource, 虚拟渲染资源.
+* 场景级别的抽象, 包括View(后处理如抗锯齿、雾等, Viewport, Camera等), Scene(场景中的物体), Entity(被绘制的物体+light等).
+
+第三层 [支撑组件]
+* Backend/RHI
+    * Platform 系统和窗口的抽象
+    * Rendering Resource/Setting抽象, 例如: Texture, Buffer, SwapChain, RenderTarget
+    * Driver 创建销毁渲染资源
+    * Context 跟踪管理渲染资源以及渲染状态设置
+* Frame Graph 渲染帧图, 一帧渲染的整个pipline.
 * Material 材质的定义和解析
+* JobSystem 任务系统
 
 除了此部分之外, 对于Android, 还有特定的JNI导出`android/filament-android`.
 
-### 主体库 filament
+### 主体库 filament [第二层]
 
 不同层次渲染数据以及其管理的抽象. 
 
@@ -32,34 +41,6 @@ filament整体架构:
 </center>
 <center><em>filament代码头文件(左), filament代码src/detail(右)</em></center>
 </figure>
-
-在filament代码中使将类的实现细节和其开放的功能接口强分离, 每一个类开放的类都有一个加前缀F的实现类. 如filament主体库中这些实现类头文件在details目录下. 通过`upcast`引用实现类的实现, 如camera类中:
-
-```c++
-void Camera::setProjection(double fovInDegrees, double aspect, double near, double far,
-        Camera::Fov direction) noexcept {
-    upcast(this)->setProjection(fovInDegrees, aspect, near, far, direction);
-}
-```
-
-`upcast`的定义:
-
-```c++
-#define FILAMENT_UPCAST(CLASS)                                      \
-    inline F##CLASS& upcast(CLASS& that) noexcept {                 \
-        return static_cast<F##CLASS &>(that);                       \
-    }                                                               \
-    inline const F##CLASS& upcast(const CLASS& that) noexcept {     \
-        return static_cast<const F##CLASS &>(that);                 \
-    }                                                               \
-    inline F##CLASS* upcast(CLASS* that) noexcept {                 \
-        return static_cast<F##CLASS *>(that);                       \
-    }                                                               \
-    inline F##CLASS const* upcast(CLASS const* that) noexcept {     \
-        return static_cast<F##CLASS const *>(that);                 \
-    }
-```
-
 
 #### 细说Material
 
@@ -123,25 +104,83 @@ class FMaterial : public Material {
 
 __TODO Question: 对于有多个pass的material如何处理?__
 
-### Backend
+### Backend/RHI
 
 backend包括两部分:
 
 * 图形渲染API抽象
+    * Engine, 用户调用接口. 生成命令提交给JobSystem.
+    * Context, 上下文(图形资源、图形CommandQueue, CommandBuffer, State, SwapChain等).
+    * Driver, 图形API抽象调用(创建/销毁抽象的图形资源、状态设置)
+    * 资源抽象 图形资源的封装
 
 * 平台窗口系统中间层抽象
-    图形渲染API与本地窗口系统之间的中间层接口. 如: EGL(android), Cocoa(ios).
+    平台窗口系统中间抽象, 在各个platform*.*中定义和实现.    
 
 <figure class="image">
 <center>
-<img src="../rc/finament_backend.JPG" width=200>
+<img src="../rc/filament_backend.png" width=300>
+<img src="../rc/filament_backend_opengl.jpg" width=250>
 </center>
-<center><em>opengl(es) backend</em></center>
+<center><em>filament backend(left),  opengl(es) backend(right)</em></center>
 </figure>
 
-平台窗口系统中间抽象, 在各个platform*.*中定义和实现. 可以看到, vulkan和metal这两种先进的框架, platform定义很简单, 主要就是创建driver对象. 而opengl则实现了一些其他必要的函数(如commit, makeCurrent, createSwapChain等).
-
 #### backend初始化过程
+
+在filament中, `opengl context`, `vulkan/metal device`是怎么创建的?
+
+在platform中封装了各个平台+窗口系统下, 各个图形API Driver的创建和销毁. 其中, Opengl由于其设计思想比较古老, 还添加了swapchain以及makecurrent等函数.
+
+<figure class="image">
+<center>
+<img src="../rc/filament_platform.svg" width=1000>
+</center>
+<center><em>platform 结构</em></center>
+</figure>
+
+几个重要的platform:
+* PlatformWGL中, platform在创建的时候直接创建窗口, 并得到窗口的opengl context.
+
+* PlatformEGLAndroid
+
+* PlatformVkWindows, 
+
+* PlatformVkAndroid
+
+* platformMetal, 直接创建Device.
+
+在创建了platform之后, 再使用OpenGLDriverFactory根据platform和context, 创建Driver.
+
+🍉 在PC(Windows/Linux/MAC)上, vulkan/opengl虽然链接的库不同, 但其有统一的标准. filament使用bluevk, blueopengl实现运行时加载.
+动态加载动态库可以得到函数名和指针, 为了在使用时无差别, 使用汇编伪指令定义了每个opengl api函数. 对于移动端(ios/android)则任然使用各自的头文件.
+
+```c++
+struct {
+    void** api_call;
+    const char* api_name;
+} g_gl_stubs[] = {
+    { &__blue_glCore_glMultiDrawArraysIndirectBindlessCountNV, "glMultiDrawArraysIndirectBindlessCountNV" },
+    { &__blue_glCore_glCopyTexImage1D, "glCopyTexImage1D" },
+...
+};
+
+for (unsigned int i = 0; i < blueCoreNumFunctions; i++) {
+    *g_gl_stubs[i].api_call = loadFunction(g_gl_stubs[i].api_name);
+    ...
+}
+```
+
+```
+extrn __blue_glCore_glMultiDrawArraysIndirectBindlessCountNV: qword
+glMultiDrawArraysIndirectBindlessCountNV proc
+    mov r11, __blue_glCore_glMultiDrawArraysIndirectBindlessCountNV
+    jmp r11
+glMultiDrawArraysIndirectBindlessCountNV endp
+```
+
+🥝 这个地方自动生成各个函数指针定义, 以及加载的代码是不是更通熟易懂?
+
+#### backend资源创建过程
 
 在filament中, 大部分操作都需要用到`Engine`, 调用其相关函数, 但仔细看代码可以发现, `Engine`类其实只是构建了虚拟的资源, 并不真正干活.
 
@@ -154,49 +193,21 @@ inline T* FEngine::create(ResourceList<T>& list, typename T::Builder const& buil
 }
 ```
 
-在filament中, `opengl context`, `vulkan/metal device`是怎么创建的?
+#### 其他:
 
-在platform中封装了各个平台+窗口系统下, 各个图形API Driver的创建和销毁. 其中, Opengl由于其设计思想比较古老, 还添加了swapchain以及makecurrent等函数.
+* 🥝 filament的RHI设计感觉有点复杂. 其中包括了系统平台的统一以及图形API的统一. 而Qt有其天然的优势: 早就统一了系统和窗口平台(此部分不用关注), 因此其RHI的设计相对独、清晰.
 
-<figure class="image">
-<center>
-<img src="../rc/filament_platform.svg" width=1000>
-</center>
-<center><em>platform</em></center>
-</figure>
+* filament如何编译android/ios版本? 在cmake时使用特定的toolchain. 在代码的Windows.md中有详细说明.
 
-几个重要的platform:
-* PlatformWGL中, platform在创建的时候直接创建窗口, 并得到窗口的opengl context.
-
-* PlatformVkWindows
-
-* PlatformEGLAndroid
-
-* PlatformVkAndroid
-
-* platformMetal, 直接创建Device.
-
-在创建了platform之后, 再使用OpenGLDriverFactory根据platform和context, 创建Driver.
-
-#### backend资源创建过程
-
-
-
-#### backend RenderPass组建过程
-
-#### 其他Q&A:
-
-TODO filament如何编译android/ios版本?
-在cmake时使用特定的toolchain. android模拟器
-
-~~如何区分OpenGL和OpenGLES的?~~
-
+* 如何区分OpenGL和OpenGLES的? OpenGL和OpenGL ES函数相同, 只是库不一样.
 
 
 ### JobSystem
 
+在filament中定义了一个任务系统, 所有操作都封装成了一个个的command, 丢到任务系统中异步执行.
 
-### 内存管理
+
+### 🍉 内存管理
 
 为什么不用c++默认的内存管理方式? $\to$ [游戏引擎开发新感觉！(6) c++17内存管理](https://zhuanlan.zhihu.com/p/96089089)
 
@@ -208,6 +219,38 @@ __new operator和operator new__
 
 new operator类似于`malloc`用来申请内存, 可以被重载. 而operator new, 除了申请内存外, 还执行类对象的构造函数.
 
+#### 内存对齐
+```c++
+class FEngine : public Engine {
+public:
+    inline void* operator new(std::size_t count) noexcept {
+        return utils::aligned_alloc(count * sizeof(FEngine), alignof(FEngine));
+    }
+    ...
+}
+
+inline void* aligned_alloc(size_t size, size_t align) noexcept {
+    assert(align && !(align & align - 1));
+
+    void* p = nullptr;
+
+    // must be a power of two and >= sizeof(void*)
+    while (align < sizeof(void*)) {
+        align <<= 1u;
+    }
+
+#if defined(WIN32)
+    p = ::_aligned_malloc(size, align);
+#else
+    ::posix_memalign(&p, align, size);
+#endif
+    return p;
+}
+
+// void* aligned_alloc( std::size_t alignment, std::size_t size ); (since C++17)
+```
+
+#### 自主管理内存
 ```c++
 // file allocators.h
 #ifndef NDEBUG
@@ -298,14 +341,69 @@ void* alloc(size_t size, size_t alignment = alignof(std::max_align_t), size_t ex
 }
 ```
 
-### FrameGraph
-
+### 🍉 FrameGraph
 
 ### 其他
 
+#### 一些值得借鉴的写法
+
+🍉 detail 和 implementation分离
+在filament代码很多类都有一个加前缀F的实现类. 这些实现类头文件在details目录下. 通过`upcast`引用实现类的实现, 如camera类中:
+
+```c++
+void Camera::setProjection(double fovInDegrees, double aspect, double near, double far,
+        Camera::Fov direction) noexcept {
+    upcast(this)->setProjection(fovInDegrees, aspect, near, far, direction);
+}
+```
+
+`upcast`的定义:
+
+```c++
+#define FILAMENT_UPCAST(CLASS)                                      \
+    inline F##CLASS& upcast(CLASS& that) noexcept {                 \
+        return static_cast<F##CLASS &>(that);                       \
+    }                                                               \
+    inline const F##CLASS& upcast(const CLASS& that) noexcept {     \
+        return static_cast<const F##CLASS &>(that);                 \
+    }                                                               \
+    inline F##CLASS* upcast(CLASS* that) noexcept {                 \
+        return static_cast<F##CLASS *>(that);                       \
+    }                                                               \
+    inline F##CLASS const* upcast(CLASS const* that) noexcept {     \
+        return static_cast<F##CLASS const *>(that);                 \
+    }
+```
+
+🍉 构建者模式和工厂模式
+
+
+🍉 资源对象的不允许拷贝, 不允许在堆上创建
+
+```c++
+class UTILS_PUBLIC FilamentAPI {
+
+    // disallow copy and assignment
+    FilamentAPI(FilamentAPI const&) = delete;
+    FilamentAPI(FilamentAPI&&) = delete;
+    FilamentAPI& operator=(FilamentAPI const&) = delete;
+    FilamentAPI& operator=(FilamentAPI&&) = delete;
+
+
+    // allow placement-new allocation, don't use "noexcept", to avoid compiler null check
+    static void *operator new     (size_t, void* p) { return p; }
+
+    // prevent heap allocation
+    static void *operator new     (size_t) = delete;
+    static void *operator new[]   (size_t) = delete;
+    static void  operator delete  (void*)  = delete;
+    static void  operator delete[](void*)  = delete;
+};
+```
+
 #### 异常管理机制
 
-#### 版本管理
+#### 🍉 版本管理
 Filament使用三个数字来定义一个版本:
 * __most significant__ number, 当API不再向后兼容, 或者引入一套新的API.
 
