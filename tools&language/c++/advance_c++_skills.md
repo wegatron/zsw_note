@@ -140,7 +140,21 @@ struct mystruct {
     char b;
 } __attribute__ ((__packed__));
 // sizeof(mystruct) = 5
+
+
+// cache line 大小一般是64位
+constexpr size_t CACHELINE_SIZE = 64;
+
+class alignas(CACHELINE_SIZE) Job {
+    public:
+        Job() noexcept {} /* = default; */ /* clang bug */ // NOLINT(modernize-use-equals-default,cppcoreguidelines-pro-type-member-init)
+        Job(const Job&) = delete;
+        Job(Job&&) = delete;
+    ...
+};
 ```
+
+https://cloud.tencent.com/developer/section/1009105
 
 ## Lock
 SpinLock

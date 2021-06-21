@@ -182,6 +182,50 @@ glMultiDrawArraysIndirectBindlessCountNV endp
 
 #### backend资源创建过程
 
+在引擎构建时, 创建一个driver线程, 在该线程内相关图形API命令(execute函数).
+
+```c++
+FEngine* FEngine::create(Backend backend, Platform* platform, void* sharedGLContext) {
+    ...
+    // start the driver thread
+    instance->mDriverThread = std::thread(&FEngine::loop, instance);
+
+    // wait for the driver to be ready
+    instance->mDriverBarrier.await();
+    ...
+}
+
+int FEngine::loop() {
+    ...
+    while (true) {
+        // looks like thread affinity needs to be reset regularly (on Android)
+        JobSystem::setThreadAffinityById(id);
+        if (!execute()) {
+            break;
+        }
+    }
+    ...    
+}
+
+bool FEngine::execute() {
+    // wait until we get command buffers to be executed (or thread exit requested)
+    auto buffers = mCommandBufferQueue.waitForCommands();
+    if (UTILS_UNLIKELY(buffers.empty())) {
+        return false;
+    }
+
+    // execute all command buffers
+    for (auto& item : buffers) {
+        if (UTILS_LIKELY(item.begin)) {
+            mCommandStream.execute(item.begin);
+            mCommandBufferQueue.releaseBuffer(item);
+        }
+    }
+
+    return true;    
+}
+```
+
 在filament中, 大部分操作都需要用到`Engine`, 调用其相关函数, 但仔细看代码可以发现, `Engine`类其实只是构建了虚拟的资源, 并不真正干活.
 
 ```c++
@@ -190,6 +234,47 @@ inline T* FEngine::create(ResourceList<T>& list, typename T::Builder const& buil
     T* p = mHeapAllocator.make<T>(*this, builder);
     list.insert(p);
     return p;
+}
+```
+
+🍉 这个地方咋一看, 申请虚拟资源就完了, 看CommandQueue, 也找不到其怎么将command存入的地方.
+以前看到的的任务队列都是标准的生产者消费者模式, 有一个push任务的接口, 一个执行任务的线程.
+
+这里, 使用`CircularBuffer`, 命令被暂存在buffer中, 当执行`CommandQueue::flush`时, 将buffer中的命令才被加入任务队列(CommandQueue只允许单个线程往里边放任务和flush).
+
+```c++
+// 在虚拟的图形资源中会往buffer中添加相关命令
+FVertexBuffer::FVertexBuffer(FEngine& engine, const VertexBuffer::Builder& builder)
+{
+    ...
+    FEngine::DriverApi& driver = engine.getDriverApi(); // 这里driver是CommandStream
+    mHandle = driver.createVertexBuffer(
+            mBufferCount, attributeCount, mVertexCount, attributeArray, backend::BufferUsage::STATIC);    
+    ...
+}
+
+// CommandStream以CircleBuffer的数据来源
+void FEngine::init() {
+    ...
+    mCommandStream = CommandStream(*mDriver, mCommandBufferQueue.getCircularBuffer());
+    ...
+}
+
+// 将buffer中的命令放入queue
+void CommandBufferQueue::flush() noexcept {
+    SYSTRACE_CALL();
+
+    CircularBuffer& circularBuffer = mCircularBuffer;
+    
+    // end of this slice
+    void* const head = circularBuffer.getHead();
+
+    // beginning of this slice
+    void* const tail = circularBuffer.getTail();
+
+    std::unique_lock<utils::Mutex> lock(mLock);
+    mCommandBuffersToExecute.push_back({ tail, head });
+    ...
 }
 ```
 
@@ -206,6 +291,11 @@ inline T* FEngine::create(ResourceList<T>& list, typename T::Builder const& buil
 
 在filament中定义了一个任务系统, 所有操作都封装成了一个个的command, 丢到任务系统中异步执行.
 
+JobSystem类的分析
+
+JobSystem的初始化
+
+JobSystem是怎么被使用的, 在哪些地方用到了JobSystem
 
 ### 🍉 内存管理
 
@@ -220,35 +310,7 @@ __new operator和operator new__
 new operator类似于`malloc`用来申请内存, 可以被重载. 而operator new, 除了申请内存外, 还执行类对象的构造函数.
 
 #### 内存对齐
-```c++
-class FEngine : public Engine {
-public:
-    inline void* operator new(std::size_t count) noexcept {
-        return utils::aligned_alloc(count * sizeof(FEngine), alignof(FEngine));
-    }
-    ...
-}
-
-inline void* aligned_alloc(size_t size, size_t align) noexcept {
-    assert(align && !(align & align - 1));
-
-    void* p = nullptr;
-
-    // must be a power of two and >= sizeof(void*)
-    while (align < sizeof(void*)) {
-        align <<= 1u;
-    }
-
-#if defined(WIN32)
-    p = ::_aligned_malloc(size, align);
-#else
-    ::posix_memalign(&p, align, size);
-#endif
-    return p;
-}
-
-// void* aligned_alloc( std::size_t alignment, std::size_t size ); (since C++17)
-```
+refer to advance_c++_skills.md
 
 #### 自主管理内存
 ```c++
