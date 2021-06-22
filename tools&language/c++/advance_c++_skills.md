@@ -102,6 +102,24 @@ BTW, 自主管理内存的好处:
 ① 对于频繁申请释放, 可以减少系统调用.
 ② 对于online运行的程序, 可以加日志, 方便后续调试或优化.
 
+| 操作 | c++标准 | 解释 |
+| --- | --- | --- |
+| `alignas([input_bytes])` | c++11 attribute | 一个元素或者一个类对象必须对齐到的内存边界 |
+| `alignof([type])` | c++11 函数 | 得到一个元素或者一个类对象中最大的那个元素的内存对齐边界 |
+| `std::max_align_t` | c++11 值 | std::malloc返回的内存地址, 对齐大小不能小于std::max_align_t的对齐大小 |
+| `aligned_alloc(input_bytes)` | c++11 函数 | 规定了分配空间的起始地址对齐的位置 |
+
+<figure class="image">
+<center>
+<img src="../../rc/cpu_cacheline_size.JPG" width=300>
+</center>
+<center><em>cpu cache line size i7</em></center>
+</figure>
+
+__`alignas`用来修饰类型, 使之在`new`时就能够按照给定的内存对齐方式申请空间. 而`aligned_alloc`则是申请一个指定大小的内存块.__
+
+对于`alignas`超过`std::max_align_t`的类型, 在使用stl container时, 需要自定义allocator. 在c++17中扩展了operator new, 不需要再自定义allocator.
+
 ```c++
 inline void* aligned_alloc(size_t size, size_t align) noexcept {
     assert(align && !(align & align - 1));
@@ -130,31 +148,7 @@ inline void aligned_free(void* p) noexcept {
 }
 ```
 
-### 数据结构的内存排布控制
-
-```c++
-// __attribute__ ((__packed__)) 紧凑式, 不对齐
-
-struct mystruct {
-    int a;
-    char b;
-} __attribute__ ((__packed__));
-// sizeof(mystruct) = 5
-
-
-// cache line 大小一般是64位
-constexpr size_t CACHELINE_SIZE = 64;
-
-class alignas(CACHELINE_SIZE) Job {
-    public:
-        Job() noexcept {} /* = default; */ /* clang bug */ // NOLINT(modernize-use-equals-default,cppcoreguidelines-pro-type-member-init)
-        Job(const Job&) = delete;
-        Job(Job&&) = delete;
-    ...
-};
-```
-
-https://cloud.tencent.com/developer/section/1009105
+更多更详细的资料, 参考[游戏引擎开发新感觉！(6) c++17内存管理](https://zhuanlan.zhihu.com/p/96089089)
 
 ## Lock
 SpinLock

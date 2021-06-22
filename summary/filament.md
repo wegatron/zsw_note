@@ -23,7 +23,7 @@ filament整体架构:
     * Platform 系统和窗口的抽象
     * Rendering Resource/Setting抽象, 例如: Texture, Buffer, SwapChain, RenderTarget
     * Driver 创建销毁渲染资源
-    * Context 跟踪管理渲染资源以及渲染状态设置
+    * Context 跟踪管理渲染资源以及渲染状态设置. Vulkan/Metal(数据Device, CommandQueue...), OpenGl(OpenGL状态控制).
 * Frame Graph 渲染帧图, 一帧渲染的整个pipline.
 * Material 材质的定义和解析
 * JobSystem 任务系统
@@ -125,7 +125,7 @@ backend包括两部分:
 <center><em>filament backend(left),  opengl(es) backend(right)</em></center>
 </figure>
 
-#### backend初始化过程
+#### 初始化
 
 在filament中, `opengl context`, `vulkan/metal device`是怎么创建的?
 
@@ -149,7 +149,6 @@ backend包括两部分:
 
 * platformMetal, 直接创建Device.
 
-在创建了platform之后, 再使用OpenGLDriverFactory根据platform和context, 创建Driver.
 
 🍉 在PC(Windows/Linux/MAC)上, vulkan/opengl虽然链接的库不同, 但其有统一的标准. filament使用bluevk, blueopengl实现运行时加载.
 动态加载动态库可以得到函数名和指针, 为了在使用时无差别, 使用汇编伪指令定义了每个opengl api函数. 对于移动端(ios/android)则任然使用各自的头文件.
@@ -180,7 +179,26 @@ glMultiDrawArraysIndirectBindlessCountNV endp
 
 🥝 这个地方自动生成各个函数指针定义, 以及加载的代码是不是更通熟易懂?
 
-#### backend资源创建过程
+在创建了platform之后, 再使用OpenGLDriverFactory根据platform和context, 创建Driver. Driver图形API的真正抽象.
+
+<figure class="image">
+<center>
+<img src="../rc/filament_rendering_resources_class.svg" width600>
+</center>
+<center><em>Driver结构</em></center>
+</figure>
+
+
+#### 资源创建
+
+资源创建的过程:
+
+<figure class="image">
+<center>
+<img src="../rc/filament_rendering_resource.svg" width=800>
+</center>
+<center><em>资源创建过程</em></center>
+</figure>
 
 在引擎构建时, 创建一个driver线程, 在该线程内相关图形API命令(execute函数).
 
@@ -278,7 +296,49 @@ void CommandBufferQueue::flush() noexcept {
 }
 ```
 
-#### 其他:
+在Driver的类中, 定义了图形资源的handler
+```c++
+class OpenGLDriver final : public backend::DriverBase {
+    ...
+    struct GLVertexBuffer : public backend::HwVertexBuffer {
+        using HwVertexBuffer::HwVertexBuffer;
+        struct {
+            // 4 * MAX_VERTEX_ATTRIBUTE_COUNT bytes
+            std::array<GLuint, backend::MAX_VERTEX_ATTRIBUTE_COUNT> buffers{};
+        } gl;
+    };
+};
+```
+
+```c++
+FVertexBuffer::FVertexBuffer(FEngine& engine, const VertexBuffer::Builder& builder)
+{
+    FEngine::DriverApi& driver = engine.getDriverApi();
+    mHandle = driver.createVertexBuffer(
+            mBufferCount, attributeCount, mVertexCount, attributeArray, backend::BufferUsage::STATIC);
+}
+
+// 真实的createVertexBuffer函数展开后如下.
+// 每一层的抽象图形API都有自己的一套实现方式, 直到真正的XXXDriver.cpp
+VertexBufferHandle createVertexBuffer(uint8_t bufferCount, uint8_t attributeCount, uint32_t vertexCount,
+                                      AttributeArray attributes, BufferUsage usage)
+{
+    mDriver->debugCommand("createVertexBuffer");
+    VertexBufferHandle result = mDriver->createVertexBufferS();
+    using Cmd = CommandType<decltype(&Driver::createVertexBufferR)>::Command<&Driver::createVertexBufferR>;
+
+    // 在创建命令时已经把命令放入command buffer
+    void* const p = allocateCommand(CommandBase::align(sizeof(Cmd)));
+    new(p) Cmd(mDispatcher->createVertexBuffer_, // 函数指针
+                VertexBufferHandle(result), std::move(bufferCount), std::move(attributeCount), std::move(vertexCount),
+                std::move(attributes), std::move(usage));
+    return result;
+}
+```
+
+#### 资源使用
+
+#### 其他
 
 * 🥝 filament的RHI设计感觉有点复杂. 其中包括了系统平台的统一以及图形API的统一. 而Qt有其天然的优势: 早就统一了系统和窗口平台(此部分不用关注), 因此其RHI的设计相对独、清晰.
 
@@ -289,13 +349,48 @@ void CommandBufferQueue::flush() noexcept {
 
 ### JobSystem
 
-在filament中定义了一个任务系统, 所有操作都封装成了一个个的command, 丢到任务系统中异步执行.
+在`Engine`构建时, 根据系统配置, 自动创建`JobSystem`. JobSystem构成一颗树结构, 只有子任务全部结束后, 父任务才算结束.
+```c++
+// userThreadCount = 0, adoptableThreadsCount = 1
+JobSystem::JobSystem(const size_t userThreadCount, const size_t adoptableThreadsCount)
+{
+    if (threadPoolCount == 0) {
+        // default value, system dependant
+        int hwThreads = std::thread::hardware_concurrency();
+        if (UTILS_HAS_HYPER_THREADING) {
+            // For now we avoid using HT, this simplifies profiling.
+            // TODO: figure-out what to do with Hyper-threading
+            // since we assumed HT, always round-up to an even number of cores (to play it safe)
+            hwThreads = (hwThreads + 1) / 2;
+        }
+        // make sure we have at least one thread in the thread pool
+        hwThreads = std::max(2, hwThreads);
+        // one of the thread will be the user thread
+        threadPoolCount = hwThreads - 1;
+    }
 
-JobSystem类的分析
+    #pragma nounroll
+    for (size_t i = 0, n = states.size(); i < n; i++) {
+        ...
+        if (i < hardwareThreadCount) {
+            // don't start a thread of adoptable thread slots
+            state.thread = std::thread(&JobSystem::loop, this, &state);
+        }        
+    }
+}
 
-JobSystem的初始化
+// 使用
+{
+    auto *prepareVisibleLightsJob = js.runAndRetain(js.createJob(nullptr,
+        [&frustum = mCullingFrustum, &engine, scene](JobSystem& js, JobSystem::Job*) {
+            FView::prepareVisibleLights(
+                engine.getLightManager(), js, frustum, scene->getLightData());
+    }));
+    js.waitAndRelease(prepareVisibleLightsJob);
+}
+```
 
-JobSystem是怎么被使用的, 在哪些地方用到了JobSystem
+__filament中的渲染资源创建和销毁则通过command, 在engine中开启了一个单独的线程处理.__
 
 ### 🍉 内存管理
 
