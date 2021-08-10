@@ -170,6 +170,18 @@ Makefile:129: recipe for target 'all' failed
 ```
 原因： /usr/include在gcc中的搜索优先级高于其他路径，因此当cuda_runtime_api.h在/usr/local/cuda/include文件夹下，而driver_types.h在/usr/include存在，则会优先去匹配/usr/include下的driver_types.h文件，从而造成两个文件冲突.
 
+## 编译器
+
+```bash
+docker run --rm -v e:/opensource_code:/code -p 127.0.0.1:4000:4000 -ti 1d503e41c3c0 /bin/bash
+gdbserver :4000 ./xxx
+```
+
+提交镜像
+```bash
+docker commit -a "wegatron" -m "install ***" -p [container id] [rep:tag]
+```
+
 ## Reference
 [docker小记](https://yeasy.gitbooks.io/docker_practice/content/image/build.html)
 [docker volume](https://www.binss.me/blog/learn-docker-with-me-about-volume/)

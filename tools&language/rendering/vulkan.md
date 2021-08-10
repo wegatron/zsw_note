@@ -1,5 +1,69 @@
 ## Vulkan
-《Vulkan Programming Guide》 的一些笔记.
+对于初学者而言, 先看[Vulkan Tutorial](https://vulkan-tutorial.com), 对vulkan的基本使用流程有一个基本的了解. 再阅读《Vulkan Programming Guide》 对vulkan的每一个模块做一个更详细的了解.
+
+### 基本流程
+1. 创建Vulkan Instance.
+2. 创建 Surface.
+    Vulkan无法与window system直接交互, 需要使用WSI(Window System Integration) extension. 这里, 可以直接使用第三方库的封装, 如`glfwCreateWindowSurface`.
+
+3. 选择合适的physical device.
+    physical device所需具备的条件: 支持所需要的extension, 支持GRAPHICS_QUEUE+present, 并且至少支持一种surface format+presend mode.
+    <small>注: 严谨的来说, 是需要先check physical device是否满足条件, 再pick, 不过[vulkanExamples](https://github.com/SaschaWillems/Vulkan)并没有做check, 当前的device几乎都支持graphics和present, 如果不支持的话, 后续创建logic device也会失败, 并不影响.</small>
+
+4. 创建logical device.
+    根据要求设置logical device的特性: enabled features, extension, queue family, layers.
+
+5. 创建Swap chain.
+    Vulkan没有默认的frame buffer, 对应的需要显式地创建swap chain(__表示一个待显示的图片队列__):
+    * 启用`VK_KHR_swapchain`扩展.
+    * 查询/确保 swap chain与当前surface的兼容性(surface format: VK_FORMAT_B8G8R8A8_SRGB... + present mode: VK_PRESENT_MODE_MAILBOX_KHR...).
+    * 根据surface format(color, depth), Presentataion mode(将图片转换到屏幕显示的策略), swap extent(resolution)创建swap chain.
+
+6. render pass(render target设置)
+    attachment以及其load store设置(在vulkan中depth和color的设置是一起的, 而stencil是独立的)
+
+7. 创建VkDescriptorSetLayout, 用来绑定shader中可以访问的数据, 如uniform buffer, texture.
+    descript set是一个可以绑定到pipeline的资源几何, 一个pipeline可以同时绑定多个descript set(vulkan 最少支持4个).
+
+    <small>注: Shader可以通过两种方式来读取/写出数据, ①通过固定的硬件(管线)函数; ②一些可以直接读取或写出的数据.</small>
+
+    完整的来说, 包含三个步骤:
+    * Specify a descriptor layout during pipeline creation
+    * Allocate a descriptor set from a descriptor pool
+    * Bind the descriptor set during rendering
+
+8. 创建graphics pipeline.
+    * vertex + fragment shader
+    * viewport state(viewport 和 scissor)
+        > viewports define the transformation from the image to the framebuffer, scissor rectangles define in which regions pixels will actually be stored
+    * 光栅化设置
+        geometry $\to$ fragment, depth testing, face culling, scissor test.
+        设置包括: depthClampEnable, polygonMode, lineWidth, cullMode, depthBias...
+    * multisampling
+    * depth and stencil test
+    * color blending
+    * pipeline layout(设置VkDescriptorSetLayoutBinding)
+
+9. 利用swapChainImageView创建frame buffer.
+
+10. 创建command pool, 从而创建command buffer.
+
+11. 创建 texture, vertex, index, uniform buffers.
+
+12. 创建DescriptSetPool而后创建DescriptSet. 参考7.
+    > Descriptor sets can't be created directly, they must be allocated from a pool like command buffers.
+
+13. 创建command buffer, 并加入相关command.
+    资源绑定 + draw
+
+
+#### 数据Align
+
+
+Question:
+1. render pass如何与swap chain中的imageview联系起来?
+2. vertex buffer 和 vertex shader的input是如何联系起来的?
+3. command buffer的作用?
 
 ### 一些核心概念
 <figure class="image">

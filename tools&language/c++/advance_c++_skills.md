@@ -94,13 +94,32 @@ if (target == GL_UNIFORM_BUFFER || target == GL_TRANSFORM_FEEDBACK_BUFFER) {
  [@理解 C++ 的 Memory Order](http://senlinzhan.github.io/2017/12/04/cpp-memory-order/)
 
 ## 内存布局对齐分配释放
-好处:
-① 减少内存碎片, 提高访问速度.
-② SIMD向量指令如(AVX)需要内存对齐.
+字节对齐的细节和编译器实现相关，但一般而言，满足三个准则：
+* (结构体)变量的首地址能够被其(最宽)基本类型成员的大小所整除；
+* 结构体每个成员相对于首地址的偏移量都是成员大小的数倍，如有需要,编译器会在成员之间加上填充字节(internal adding)
+* 结构体的总大小为结构体最宽基本类型成员大小的数倍，如有需要,编译器会在最末一个成员之后加上填充字节(trailing padding)
 
-BTW, 自主管理内存的好处:
-① 对于频繁申请释放, 可以减少系统调用.
-② 对于online运行的程序, 可以加日志, 方便后续调试或优化.
+缓存行对齐
+数据跨越两个cache line，意味着两次load或两次store。如果数据结构是cache line对齐的那么久可以减少不必要的cache load次数(如cache line为64, 64bit的数据若对齐则一次load, 若不对齐, 则有可能横跨两个cache line).
+
+另外, 一般将同类的(易变的和只读的)数据分开, 在并行时最好也能考虑到cache [伪共享](https://zhuanlan.zhihu.com/p/352537447)的问题(即两个线程(不同的cpu)对同一个cache 进行修改, 会产生大量的cache miss).
+
+```c++
+// every object of type struct_float will be aligned to alignof(float) boundary
+// (usually 4)
+struct alignas(float) struct_float {
+    // your definition here
+};
+ 
+// every object of type sse_t will be aligned to 256-byte boundary
+struct alignas(256) sse_t
+{
+    float sse_data[4];
+};
+ 
+// the array "cacheline" will be aligned to 128-byte boundary
+alignas(128) char cacheline[128];
+```
 
 | 操作 | c++标准 | 解释 |
 | --- | --- | --- |
@@ -147,6 +166,19 @@ inline void aligned_free(void* p) noexcept {
 #endif
 }
 ```
+
+自主管理内存
+
+好处:
+① 减少内存碎片, 提高访问速度.
+② 更好的局部性
+③ SIMD向量指令如(AVX)需要内存对齐.
+
+BTW, 自主管理内存的好处:
+① 对于频繁申请释放, 可以减少系统调用.
+② 对于online运行的程序, 可以加日志, 方便后续调试或优化.
+
+
 
 更多更详细的资料, 参考[游戏引擎开发新感觉！(6) c++17内存管理](https://zhuanlan.zhihu.com/p/96089089)
 
