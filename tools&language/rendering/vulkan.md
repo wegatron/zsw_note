@@ -64,6 +64,8 @@ Question:
 1. render pass如何与swap chain中的imageview联系起来?
 2. vertex buffer 和 vertex shader的input是如何联系起来的?
 3. command buffer的作用?
+4. swap chain中的vkimage大小设置为多少合适?
+5. vulkan 对 glsl的版本要求, glsl各版本之间的转换.
 
 ### 一些核心概念
 <figure class="image">

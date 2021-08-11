@@ -221,6 +221,30 @@ install(CODE
 "execute_process(COMMAND ${ACTIVE_QT_DIR}/bin/windeployqt.exe \"--release\" \"--plugindir\" \"${CMAKE_INSTALL_PREFIX}\" \"--no-translations\" \"--no-system-d3d-compiler\" \"${CMAKE_INSTALL_PREFIX}/${app_name}${CMAKE_RELEASE_POSTFIX}.exe\")")
 ```
 
+## GLSL编译
+```cmake
+function(add_shader target glsl_shader_path)
+	set(current-output-path ${glsl_shader_path}.spv)
+	add_custom_command(
+		OUTPUT ${current-output-path}
+		COMMAND Vulkan::glslc -o ${current-output-path} ${glsl_shader_path}
+		DEPENDS ${glsl_shader_path}
+		IMPLICIT_DEPENDS CXX ${glsl_shader_path}
+		VERBATIM)
+	set_source_files_properties(${current-output-path} PROPERTIES GENERATED TRUE)
+	target_sources(${target} PRIVATE ${current-output-path})
+endfunction(add_shader)
+
+file(GLOB shaders_files shaders/*.vert shaders/*.frag)
+
+foreach(shader_file ${shaders_files})
+	add_shader(render ${shader_file})
+endforeach(shader_file)
+```
+
+参考: https://zhuanlan.zhihu.com/p/95771200
+https://github.com/ARM-software/vulkan-sdk/blob/master/Sample.cmake
+
 # 一些问题和注意点
 1. 问题: 在linux机器上编译完成后, 只会到编译时的绝对路径下寻找链接库, 无法从当前目录下去寻找动态链接库.
   编译时指定可以从`LD_LIBRARY_PATH`中搜索动态链接库:

@@ -19,8 +19,17 @@ glslangValidator可以包含spirv-tools, 来保证通过hlsl生成的spir-v能�
 
 *以命令行形式使用.*
 
-glslangValidator
+```bash
+# 将glsl编译成spir-v, 这个-V表示vulkan, 若是opengl 则是-G
+glslangValidator -V -o texture_shader_vert.spv shader_texture.vert
+glslangValidator -V -o texture_shader_frag.spv shader_texture.frag
 
+# 将spir-v转译成glsl的不同版本, --es, --no-es表示GLSL or GLSL ES.
+spirv-cross --version 310 --es texture_shader_vert.spv --output parse.vert
+
+# 将spir-v转译成msl
+
+```
 
 ### SPIRV-Cross
 将spir-v转换为其他类型的语言, 包括: 指定版本的glsl(glsl es), msl, 
@@ -32,6 +41,20 @@ glslangValidator
 >The SPIR-V Tools project provides an API and commands for processing SPIR-V modules.
 
 *CLI和代码API形式使用*
+
+### Shaderc
+封装了glslangValidator和SPIRV-Tools, 提供类似GCC和Clang的使用方式, 更好的与构建系统相结合(如CMake).
+[shaderc github page](https://github.com/google/shaderc)
+
+```bash
+glslc shader.vert -o vert.spv
+glslc shader.frag -o frag.spv
+```
+
+[vulkan 不再支持单独默认的uniform](https://github.com/KhronosGroup/GLSL/blob/master/extensions/khr/GL_KHR_vulkan_glsl.txt)
+最新版本的glsllangValidator已经支持(待验证):
+https://github.com/KhronosGroup/glslang/issues/2158
+https://github.com/KhronosGroup/glslang/issues/2126
 
 ## glsl es
 一些常用的标记
