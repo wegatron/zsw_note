@@ -1,6 +1,8 @@
 ## Vulkan
 对于初学者而言, 先看[Vulkan Tutorial](https://vulkan-tutorial.com), 对vulkan的基本使用流程有一个基本的了解. 再阅读《Vulkan Programming Guide》 对vulkan的每一个模块做一个更详细的了解.
 
+另外[Vulkan Guide](https://vkguide.dev/docs/chapter-1/vulkan_init_code/) 教你一步一步如何搭建绘制流程, 对新手非常友好!
+
 ### 基本流程
 1. 创建Vulkan Instance.
 2. 创建 Surface.
@@ -59,6 +61,10 @@
 
 #### 数据Align
 
+#### 坐标系的变化
+opengl左手坐标系, vulkan 右手坐标系. 影响: face culling, image filp
+[The new Vulkan Coordinate System](https://matthewwellings.com/blog/the-new-vulkan-coordinate-system/)
+[OpenGL 筆記 - Coordinate System](http://blog.roy4801.tw/2020/07/13/opengl/opengl-note-6/)
 
 Question:
 1. render pass如何与swap chain中的imageview联系起来?
