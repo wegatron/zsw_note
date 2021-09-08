@@ -209,7 +209,7 @@ fetch = +refs/heads/master:refs/remotes/origin/master
 to
 
 ```
-fetch = +refs/heads/*:refs/remotes/origin/*
+fetch = +refs/heads/svn:refs/remotes/origin/svn
 ```
 
 do fetch again.

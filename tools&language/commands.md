@@ -29,6 +29,9 @@ __examples__
 # 这里g表示全部替换, 若是没有g, 则只替换一个/行
 grep -rl "TARGET_OS_OSX" ./ --exclude-dir=.git | \
 xargs sed -i "" 's/TARGET_OS_OSX/TARGET_OS_MACCATALYST/g'
+
+grep -rl "SDKROOT = macosx" ./ --exclude-dir=.git | \
+xargs sed -i "" 's/SDKROOT = macosx/SDKROOT = iphoneos/g'
 ```
 
 ## 不同文件多次执行
