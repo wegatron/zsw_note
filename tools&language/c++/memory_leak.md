@@ -24,3 +24,44 @@
 从上图区域4我们可以看到, 在这段时间区域内所申请且持有的内存.
 
 ### Visual studio
+Viausl studio的`Performance Profile`也是一个特别强大的工具, 检查内存问题的一大利器.
+![](../../rc/vs_performance_profile.png)
+
+这里只简单介绍`Memory Usage`功能, 其他强大功能可以自行探索.
+
+![](../../rc/vs_performance_profile_main.png)
+
+测试代码:
+
+```c++
+#include <iostream>
+#include <vector>
+#include <thread>
+
+struct Data
+{
+	int data[1000];
+};
+
+int main(int argc, char* argv[])
+{
+	std::vector<std::shared_ptr<Data>> datas(1000);
+	for(int i=0; i<10000; ++i)
+	{
+		datas.emplace_back(new Data);
+		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	}
+	return 0;
+}
+```
+
+运行之后, 在你想要做内存检查的地方`Take snapshot`.
+
+![](../../rc/vs_performance_profile_run.png)
+
+在`Stop Collection`之后, 即可查看每个快照相对于之前快照内存的申请情况.
+
+![](../../rc/vs_performance_profile_snapshot.png)
+
+点开对应快照, 即可发现内存申请的位置(main函数, Data数据):
+![](../../rc/vs_performance_profile_memory.png)

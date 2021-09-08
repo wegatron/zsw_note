@@ -3,6 +3,13 @@
 
 另外[Vulkan Guide](https://vkguide.dev/docs/chapter-1/vulkan_init_code/) 教你一步一步如何搭建绘制流程, 对新手非常友好!
 
+### Overview
+Data
+
+Operation
+
+DataBinding
+
 ### 基本流程
 1. 创建Vulkan Instance.
 2. 创建 Surface.
@@ -27,7 +34,7 @@
 7. 创建VkDescriptorSetLayout, 用来绑定shader中可以访问的数据, 如uniform buffer, texture.
     descript set是一个可以绑定到pipeline的资源几何, 一个pipeline可以同时绑定多个descript set(vulkan 最少支持4个).
 
-    <small>注: Shader可以通过两种方式来读取/写出数据, ①通过固定的硬件(管线)函数; ②一些可以直接读取或写出的数据.</small>
+    <small>注: Shader可以通过两种方式来读取/写出数据, ①通过固定的硬件(管线)函数; ②一些可以直接读取或 tt 写出的数据.</small>
 
     完整的来说, 包含三个步骤:
     * Specify a descriptor layout during pipeline creation

@@ -47,6 +47,13 @@
     
     ✔️解决办法: ubuntu 18.04(kernel 5.3)可以正常安装使用.
 
+## linux 挂在 windows分区无法写入的问题
+> This issue is caused by the Windows fast startup (also called hybrid boot or hybrid shutdown) option, which is enabled by default. When shutting down Windows, it hibernates, allowing for a faster boot. This is a nice option to have on Windows, but it causes the problem I mentioned above when dual booting Windows and Linux.
+
+> You can disable fast startup in Windows 10 or 8 this by launching the Control Panel, search for Power Options and click it. Next, click on the Choose what the power buttons do item from the left-hand sidebar.
+
+[Fix Windows 10 Or 8 Partition Mounted As Read-Only On Linux When Dual Booting](https://www.linuxuprising.com/2019/01/fix-windows-10-or-8-partition-mounted.html)
+
 ## Reference
 [linux 安装教程](https://linuxmint-installation-guide.readthedocs.io/zh_CN/latest/burn.html)
 [ACHI-RAID-NVME](https://www.v2ex.com/t/534791)
