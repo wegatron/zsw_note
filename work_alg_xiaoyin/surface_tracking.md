@@ -91,7 +91,7 @@ __代码实现__
    \mathrm{APtAP} &= \mathbf{I} \otimes \mathrm{RegCtrCtrReg}
    \end{aligned}
    $$
-   这里$\mathrm{RegMat}$ 行数为三角形pair的数量, 列数为网格定点数量.
+   这里$\otimes$是克罗内克积(Kronecker product), $\mathrm{RegMat}$ 行数为三角形pair的数量, 列数为网格定点数量.
 
 3. 视频帧与参考帧之间的特征点匹配, 通过正则项误差来剔除outlier.
 
@@ -180,7 +180,7 @@ function [f, G, H] = makeObjFuncFMINUNC(x, imageFunc, w2APtAP, lengthFunc, theta
 
 ```
 
-### Optimization Correspondence using Graph Matching 
+## Optimization Correspondence using Graph Matching 
 
 __使用graph matching来剔除outlier, 并计算Correspondence的概率(替换原步骤①).__
 
@@ -293,10 +293,12 @@ Deformable surface optimization既可以用ARAP, 也可以用更鲁棒的上述�
 $$
 \begin{aligned}
 \mathbf{0} &= w_1 \mathbf{v}_1 + w_2 \mathbf{v}_2 + w_3 \mathbf{v}_3\\
-0 &= w_1 + w_2 + w_3 + w_4\\
-1 &= w_1^2 + w_2^2 + w_3^2 + w_4^2
-\end{aligned} \Rightarrow \mathbf{A} \mathbf{x} = 0
+0 &= w_1 + w_2 + w_3\\
+1 &= w_1^2 + w_2^2 + w_3^2
+\end{aligned} \Leftrightarrow \mathbf{A} \mathbf{x} = 0
 $$
+🌀__我们先根据每个三角形计算出$w_1, w_2, w_3$构建 $\mathbf{A}_{min}$, $\mathbf{A} = \mathbf{I}_{3 \times 3} \otimes \mathbf{A}_{min}$. __
+
 与论文《Template-based Monocular 3D Shape Recovery using Laplacian Meshes》一样, 对于Mesh中的顶点, 可以分为被跟踪的特征点$c$和其他点$\lambda$:
 $$
 \left.
@@ -304,8 +306,9 @@ $$
 \mathbf{x} = \begin{bmatrix}
 \mathbf{c}\\
 \mathbf{\lambda}
-\end{bmatrix}\\\\
-\mathbf{Ax} = \mathbf{0}
+\end{bmatrix}\\
+\mathbf{A} = [\mathbf{A_c} | \mathbf{A_\lambda}]\\
+\min \parallel \mathbf{A_c c} + \mathbf{A_\lambda \lambda} \parallel^2
 \end{aligned}\right\} \Rightarrow 
 \left\{\begin{aligned}
 \mathbf{c} &= \mathbf{P}_c\mathbf{x}\\
@@ -319,9 +322,24 @@ $$
 $$
 这里, 事实上我们想要优化计算的是$\mathbf{x}$, 之所以将$\mathbf{x}$转化为$\mathbf{c}$是为了减少计算量, 另外并不是$\mathbf{c}$中每个顶点都能跟踪得上, 这个不影响.
 
+🌀同理, 计算$\mathbf{P}_{min}$,  $\mathbf{P} =\mathbf{I}_{3\times 3} \otimes \mathbf{P}_{min}$.
+
 #### 特征点匹配
 
-这里使用opencv的GFTT来检测特征点, 然后使用KLT来跟踪. Graph Matching方法相对复杂, 这里使用相对简单的《Template-based Monocular 3D Shape Recovery》论文中的方法剔除outlier. 
+这里使用opencv的GFTT来检测特征点, 然后使用KLT来跟踪. Graph Matching方法相对复杂, 这里使用相对简单的《Template-based Monocular 3D Shape Recovery》论文中的方法剔除outlier, 优化目标函数: 
+$$
+\arg \min_\mathbf{c} \frac{1}{2} [\parallel w_m\odot(\mathbf{c}-\mathbf{c}') \parallel^2 + w_r^2\parallel \mathbf{APc} \parallel^2]
+$$
+其$Jacobian$计算方式:
+$$
+\begin{aligned}
+&Jacobian_i = w_{mi}^2(\mathbf{c}_i - \mathbf{c}_i') + w_r^2\mathbf{A}_{jk}^2\mathbf{P}_{ki}^2\mathbf{c}_i\\
+\Rightarrow &Jacobian = w_m^2 \odot (\mathbf{c-c'}) + w_r^2 (\mathbf{AP})^T\mathbf{APc}
+\end{aligned}
+$$
+这里, $\odot$是逐元素的乘积, $(\mathbf{AP})^T(\mathbf{AP}) = \mathbf{I}_{3 \times 3} \otimes (\mathbf{A}_{min} \mathbf{P}_{min})^T(\mathbf{A}_{min} \mathbf{P}_{min})$
+
+TODO
 
 🫐介于Graph Matching的方法, 可以考虑加入几何项的光流跟踪, 或许可以一步到位得到匹配.
 
@@ -329,9 +347,22 @@ $$
 
 在得到较为准确特征点匹配之后, 我们就可以组件由重投影误差+正则项约束+距离约束组成的优化目标函数:
 $$
-\arg \min_\mathbf{c} \parallel w_m(\mathbf{c}-\mathbf{c}') \parallel^2 + w_r^2\parallel \mathbf{APc} \parallel^2 + w_l^2 \sum_{ij} \parallel d(\mathbf{v}_i, \mathbf{v}_j) -l_{ij}\parallel^2
+\begin{aligned}
+\arg \min_\mathbf{c} &\frac{1}{2}[\parallel w_m\odot(\mathbf{c}-\mathbf{c}') \parallel^2 + w_r^2\parallel \mathbf{APc} \parallel^2 + w_l^2 \sum_{ij} \parallel d(\mathbf{v}_i, \mathbf{v}_j) -l_{ij}\parallel^2]\\
+d(\mathbf{v}_i, \mathbf{v}_j) &= \sqrt{\parallel \mathbf{v}_i - \mathbf{v}_j\parallel^2} 
+\end{aligned}
 $$
 由于不用做投影, 可以直接计算匹配点位置误差, $w_m \in [0,1]$是匹配的可靠度, 可以根据使用的匹配方法的error计算. 
+
+🌀前两项的$Jacobian$可按照上一步的方式计算, 后一项可由链式法则推导得到.
+$$
+\begin{aligned}
+f_{ij} &= \parallel d(\mathbf{v}_i, \mathbf{v}_j) -l_{ij}\parallel^2\\
+\frac{\partial f_{ij}}{\partial \mathbf{v}_i} &= w_l^2 \cdot [d(\mathbf{v}_i, \mathbf{v}_j) - l_{ij}] \cdot \frac{1}{d(\mathbf{v}_i, \mathbf{v}_j)} \cdot (\mathbf{v}_i)\\
+\frac{\partial f_{ij}}{\partial \mathbf{v}_j} &= w_l^2 \cdot [d(\mathbf{v}_i, \mathbf{v}_j) - l_{ij}] \cdot \frac{1}{d(\mathbf{v}_i, \mathbf{v}_j)} \cdot (-\mathbf{v}_j)\\
+\frac{\partial \mathbf{v}_i}{\partial \mathbf{c}} &= \mathbf{P}_{i}
+\end{aligned}
+$$
 
 ## Reference
 
