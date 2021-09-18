@@ -350,15 +350,39 @@ $$
 $$
 \begin{aligned}
 &\arg \min_\mathbf{c} \frac{1}{2} [\parallel \mathbf{Mc} \parallel^2 + w_r^2\parallel \mathbf{APc} \parallel^2]\\
-&\mathbf{M}_i = \begin{bmatrix}1 & 0 & -u_i\\ 1 & 0 & -v_i\end{bmatrix}\\
-&\mathbf{c}_i = [x_i \; y_i\; z_i]^T
+&\mathbf{Mc} = \begin{bmatrix}1 & 0 & -u_0 & 0 & 0 & 0 & ...\\ 1 & 0 & -v_0 & 0 & 0 & 0 & ...\\0 & 0 & 0 & 1 & 0 & -u_1 & ...\\ 0 & 0 & 0 & 1 & 0 & -v_1 & ...\end{bmatrix} \begin{bmatrix} x_0\\y_0\\z_0\\x_1\\y_1\\z_1\\ ...\end{bmatrix}\\
 \end{aligned}
 $$
+
+
+
 求偏导:
 $$
-\nabla = [\mathbf{M}^T\mathbf{M} + w_r^2(\mathbf{AP})^T\mathbf{AP}]\mathbf{c}
+\begin{aligned}
+\nabla &= \mathbf{Qc}\\ 
+\mathbf{Q} &= \mathbf{M}^T\mathbf{M} + w_r^2(\mathbf{AP})^T\mathbf{AP}
+\end{aligned}
 $$
-找出最小的eigen vector, 然后恢复$uv^*_i = [\frac{x_i}{z_i} \; \frac{y_i}{z_i}]$.
+这里$\mathbf{M}^T\mathbf{M}$可以表示为:
+$$
+\begin{pmatrix}2 & 0 & -{v_0}-{u_0} & 0 & 0 & 0 & 0 & 0 & 0 & ...\\
+0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & ...\\
+-{v_0}-{u_0} & 0 & {{{v_0}}^{2}}+{{{u_0}}^{2}} & 0 & 0 & 0 & 0 & 0 & 0 & ...\\
+0 & 0 & 0 & 2 & 0 & -{v_1}-{u_1} & 0 & 0 & 0 & ...\\
+0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & ...\\
+0 & 0 & 0 & -{v_1}-{u_1} & 0 & {{{v_1}}^{2}}+{{{u_1}}^{2}} & 0 & 0 & 0 & ...\\
+0 & 0 & 0 & 0 & 0 & 0 & 2 & 0 & -{v_2}-{u_2} & ...\\
+0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & ...\\
+0 & 0 & 0 & 0 & 0 & 0 & -{v_2}-{u_2} & 0 & {{{v_2}}^{2}}+{{{u_2}}^{2}} & ...\\
+... \end{pmatrix}
+$$
+
+$$
+
+$$
+
+
+找出$\mathbf{Q}$最小的eigen vector, 然后恢复$uv^*_i = [\frac{x_i}{z_i} \; \frac{y_i}{z_i}]$.
 
 🫐介于Graph Matching的方法, 可以考虑加入几何项的光流跟踪, 或许可以一步到位得到匹配.
 
