@@ -5,7 +5,7 @@
 通过跟踪少量特征点的跟踪+表面Mesh顶点之间的约束来恢复出整个Mesh的状态.
 
 ## Template-based Monocular 3D Shape Recovery using Laplacian Meshes
-对于任意一对相连的三角形, 定义平面正则项约束(四个点共面, 对于输入非平面的Mesh有另外处理):
+对于任意一对相连的三角形, 定义平面正则项约束(四个点构成相似四边形, 对于输入非平面的Mesh有另外处理):
 $$
 \begin{aligned}
 \mathbf{0} &= w_1 \mathbf{v}_1 + w_2 \mathbf{v}_2 + w_3 \mathbf{v}_3 + w_4 \mathbf{v}_4\\
@@ -289,15 +289,17 @@ Deformable surface optimization既可以用ARAP, 也可以用更鲁棒的上述�
 
 读取参考帧(Reference frame), 标记用户感兴趣区域, 并检测特征点, 均匀三角化.
 
-对Mesh的每个三角形构建正则化约束:
+对Mesh的每对三角形构建正则化约束:
 $$
 \begin{aligned}
-\mathbf{0} &= w_1 \mathbf{v}_1 + w_2 \mathbf{v}_2 + w_3 \mathbf{v}_3\\
-0 &= w_1 + w_2 + w_3\\
-1 &= w_1^2 + w_2^2 + w_3^2
-\end{aligned} \Leftrightarrow \mathbf{A} \mathbf{x} = 0
+\mathbf{0} &= w_1 \mathbf{v}_1 + w_2 \mathbf{v}_2 + w_3 \mathbf{v}_3 + w_4 \mathbf{v}_4\\
+0 &= w_1 + w_2 + w_3 + w_4\\
+1 &= w_1^2 + w_2^2 + w_3^2 + w_4^2
+\end{aligned}
 $$
-🌀__我们先根据每个三角形计算出$w_1, w_2, w_3$构建 $\mathbf{A}_{min}$, $\mathbf{A} = \mathbf{I}_{3 \times 3} \otimes \mathbf{A}_{min}$. __
+🌀__我们先根据每个三角形计算出$w_1, w_2, w_3, w_4$构建 $\mathbf{A}_{min}$, $\mathbf{A} = \mathbf{I}_{3 \times 3} \otimes \mathbf{A}_{min}$. __
+
+可以先令$w_4 = 1$, 计算出$w_{1,2,3}$, 再将$w$归一化.   _验证:_$\begin{bmatrix}\mathrm{v}_1 & \mathrm{v}_2 & \mathrm{v}_3 & \mathrm{v}_4 \\ 1 & 1 & 1 & 1 \end{bmatrix} \cdot w = 0$.
 
 与论文《Template-based Monocular 3D Shape Recovery using Laplacian Meshes》一样, 对于Mesh中的顶点, 可以分为被跟踪的特征点$c$和其他点$\lambda$:
 $$
@@ -320,7 +322,12 @@ $$
 \end{aligned}
 \right.
 $$
-这里, 事实上我们想要优化计算的是$\mathbf{x}$, 之所以将$\mathbf{x}$转化为$\mathbf{c}$是为了减少计算量, 另外并不是$\mathbf{c}$中每个顶点都能跟踪得上, 这个不影响.
+这里, 事实上我们想要优化计算的是$\mathbf{x}$, 之所以将$\mathbf{x}$转化为$\mathbf{c}$是为了减少计算量, 另外并不是$\mathbf{c}$中每个顶点都能跟踪得上, 这个不影响. 在计算步骤:
+
+* 构建$A_{min}$, _验证:_ $\mathbf{A}_{min} * \mathbf{x} = 0$
+* 计算$\mathbf{P}_{min} = \begin{bmatrix}\mathbf{I}_{min}\\-(\mathbf{A}_{min\_\lambda}^T\mathbf{A}_{min\_\lambda})^{-1}\mathbf{A}_{min\_\lambda}^T\mathbf{A}_{min\_c}\end{bmatrix}$,  _验证:_ $\mathbf{x} = \mathbf{P}_{min} \mathbf{c}$, $(\mathbf{A}_\lambda^T\mathbf{A}_\lambda)\lambda + \mathbf{A}_\lambda^T\mathbf{A}_c = \mathbf{0}$
+* 计算$(\mathbf{A}_{min}\mathbf{P}_{min})^T(\mathbf{A}_{min}\mathbf{P}_{min})$
+* 计算$(\mathbf{AP})^T\mathbf{AP}$, _验证:_$ (\mathbf{AP})^T\mathbf{AP}\mathbf{c} = \mathbf{0}$
 
 🌀同理, 计算$\mathbf{P}_{min}$,  $\mathbf{P} =\mathbf{I}_{3\times 3} \otimes \mathbf{P}_{min}$.
 
@@ -328,22 +335,34 @@ $$
 
 这里使用opencv的GFTT来检测特征点, 然后使用KLT来跟踪. Graph Matching方法相对复杂, 这里使用相对简单的《Template-based Monocular 3D Shape Recovery》论文中的方法剔除outlier, 优化目标函数: 
 $$
-\arg \min_\mathbf{c} \frac{1}{2} [\parallel w_m\odot(\mathbf{c}-\mathbf{c}') \parallel^2 + w_r^2\parallel \mathbf{APc} \parallel^2]
+\arg \min_\mathbf{c} \frac{1}{2} [\parallel \mathrm{diag}(\mathbf{w}_m) \cdot (\mathbf{c}-\mathbf{c}') \parallel^2 + w_r^2\parallel \mathbf{APc} \parallel^2]
 $$
-其$Jacobian$计算方式:
+求偏导:
 $$
 \begin{aligned}
-&Jacobian_i = w_{mi}^2(\mathbf{c}_i - \mathbf{c}_i') + w_r^2\mathbf{A}_{jk}^2\mathbf{P}_{ki}^2\mathbf{c}_i\\
-\Rightarrow &Jacobian = w_m^2 \odot (\mathbf{c-c'}) + w_r^2 (\mathbf{AP})^T\mathbf{APc}
+&\nabla = \mathrm{diag}(\mathbf{w}_m^2)(\mathbf{c}-\mathbf{c}') + w_r^2 (\mathbf{AP})^T\mathbf{APc}\\
+\nabla = 0 \quad \Rightarrow \quad &[\mathrm{diag}(\mathbf{w}_m^2) + w_r^2 (\mathbf{AP})^T\mathbf{AP}] \cdot \mathbf{c} = \mathrm{diag}(\mathbf{w}_m^2) \cdot \mathbf{c}'
 \end{aligned}
 $$
-这里, $\odot$是逐元素的乘积, $(\mathbf{AP})^T(\mathbf{AP}) = \mathbf{I}_{3 \times 3} \otimes (\mathbf{A}_{min} \mathbf{P}_{min})^T(\mathbf{A}_{min} \mathbf{P}_{min})$
 
-TODO
+
+上述公式存在尺度问题, 无法得到结果. 使用如下公式:
+$$
+\begin{aligned}
+&\arg \min_\mathbf{c} \frac{1}{2} [\parallel \mathbf{Mc} \parallel^2 + w_r^2\parallel \mathbf{APc} \parallel^2]\\
+&\mathbf{M}_i = \begin{bmatrix}1 & 0 & -u_i\\ 1 & 0 & -v_i\end{bmatrix}\\
+&\mathbf{c}_i = [x_i \; y_i\; z_i]^T
+\end{aligned}
+$$
+求偏导:
+$$
+\nabla = [\mathbf{M}^T\mathbf{M} + w_r^2(\mathbf{AP})^T\mathbf{AP}]\mathbf{c}
+$$
+找出最小的eigen vector, 然后恢复$uv^*_i = [\frac{x_i}{z_i} \; \frac{y_i}{z_i}]$.
 
 🫐介于Graph Matching的方法, 可以考虑加入几何项的光流跟踪, 或许可以一步到位得到匹配.
 
-#### 🍋优化求解
+#### 🍋最终优化求解
 
 在得到较为准确特征点匹配之后, 我们就可以组件由重投影误差+正则项约束+距离约束组成的优化目标函数:
 $$
