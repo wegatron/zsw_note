@@ -223,4 +223,6 @@ Load the CSV data, use a TableToPoints filter
 Use a Calculator filter to combine the last three fields to a vector (operation: "(iHat*Field 3)+(jHat*Field 4)+(kHat*Field 5)")
 Apply a Glyph filter with Glyph type Arrow
 
-## paraview python
+## Paraview 显示图片
+
+加载完成之后, 在Display->Map Scalars 取消勾选.

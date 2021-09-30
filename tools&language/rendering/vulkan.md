@@ -4,11 +4,10 @@
 另外[Vulkan Guide](https://vkguide.dev/docs/chapter-1/vulkan_init_code/) 教你一步一步如何搭建绘制流程, 对新手非常友好!
 
 ### Overview
-Data
 
-Operation
+首先理清vulkan的那些对象的作用以及各自的关联性.  在Vulkan中, 每个object以Vk开头, 把他们当做不可见的handler, 可以在各个函数之间传递, 并需要在不用时释放掉他们.
 
-DataBinding
+![vulkan objects](../../rc/Vulkan-Diagram.png)
 
 ### 基本流程
 1. 创建Vulkan Instance.
@@ -44,6 +43,7 @@ DataBinding
 8. 创建graphics pipeline.
     * vertex + fragment shader
     * viewport state(viewport 和 scissor)
+        
         > viewports define the transformation from the image to the framebuffer, scissor rectangles define in which regions pixels will actually be stored
     * 光栅化设置
         geometry $\to$ fragment, depth testing, face culling, scissor test.
@@ -52,7 +52,7 @@ DataBinding
     * depth and stencil test
     * color blending
     * pipeline layout(设置VkDescriptorSetLayoutBinding)
-
+    
 9. 利用swapChainImageView创建frame buffer.
 
 10. 创建command pool, 从而创建command buffer.
@@ -60,8 +60,9 @@ DataBinding
 11. 创建 texture, vertex, index, uniform buffers.
 
 12. 创建DescriptSetPool而后创建DescriptSet. 参考7.
+    
     > Descriptor sets can't be created directly, they must be allocated from a pool like command buffers.
-
+    
 13. 创建command buffer, 并加入相关command.
     资源绑定 + draw
 
@@ -94,15 +95,15 @@ Question:
     uint32_t gpuCount = 0;
 	vkEnumeratePhysicalDevices(instance, &gpuCount, nullptr);
     vkEnumeratePhysicalDevices(instance, &gpuCount, devices.data());
-
+    
     // physical device properties
     // 硬件的属性: 硬件的名称, 制造商, 驱动版本
     vkGetPhysicalDeviceProperties(devices[j], &deviceProperties);
-
+    
     // physical device features
     // 一大堆bool值来表示那些特性被支持, 例如geometry/tessellation shader, textureCompress 
     vkGetPhysicalDeviceFeatures(physicalDevice, &deviceFeatures);
-
+    
     // physical device extension
     /*
      Vulkan extensions are simply additional features that Vulkan implementations may
@@ -130,7 +131,7 @@ Question:
     queueFamilyProperties.resize(queueFamilyCount);
 	vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice,
         &queueFamilyCount, queueFamilyProperties.data());
-
+    
     // 而后, 将所需要的queue设置到Logical Device的创建信息中
     VkDeviceCreateInfo deviceCreateInfo = {};
     ...
@@ -163,7 +164,7 @@ Question:
         bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
         // 如果设置为VK_SHARING_MODE_CONCURRENT(并行), 则需要设置该buffer会被哪些queue同时使用. 参考书 p74
         bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
+        
         // Create a new buffer
         VK_CHECK_RESULT(vkCreateBuffer(device, &bufferInfo, nullptr, &uniformBufferVS.buffer));
         ```
@@ -201,3 +202,6 @@ Question:
 ## Reference
 [khronos vulkan official site](https://www.khronos.org/vulkan/)
 [lunarg vulkan site](https://vulkan.lunarg.com/doc/sdk/1.2.162.1/windows/tutorial/html/index.html)
+
+[Understanding Vulkan® Objects](https://gpuopen.com/learn/understanding-vulkan-objects/)
+

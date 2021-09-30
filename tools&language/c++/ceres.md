@@ -228,3 +228,7 @@ class LocalParameterization {
 > Ceres allows the user to provide varying amounts of hints to the solver about the variable elimination ordering to use. This can range from no hints, where the solver is free to decide the best ordering based on the user’s choices like the linear solver being used, to an exact order in which the variables should be eliminated, and a variety of possibilities in between.
 
 ### 一个完整的Demo
+
+## Reference
+[Ceres Modeling Non-linear Least Squares](http://ceres-solver.org/nnls_modeling.html)
+[Ceres Solve]

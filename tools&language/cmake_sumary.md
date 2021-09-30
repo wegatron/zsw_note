@@ -245,9 +245,25 @@ endforeach(shader_file)
 参考: https://zhuanlan.zhihu.com/p/95771200
 https://github.com/ARM-software/vulkan-sdk/blob/master/Sample.cmake
 
+
+
+CMake Build Type
+
+RelWithDebugInfo
+
+```
+string( REPLACE "/DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}") # windows
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+	string( REPLACE "-DNDEBUG" "" CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}") #gcc/ clang
+else
+```
+
+
+
 # 一些问题和注意点
 1. 问题: 在linux机器上编译完成后, 只会到编译时的绝对路径下寻找链接库, 无法从当前目录下去寻找动态链接库.
-  编译时指定可以从`LD_LIBRARY_PATH`中搜索动态链接库:
+    编译时指定可以从`LD_LIBRARY_PATH`中搜索动态链接库:
+    
     ```cmake
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath='$ORIGIN',--enable-new-dtags")
     set(CMAKE_INSTALL_PATH_USE_LINK_PATH TRUE)

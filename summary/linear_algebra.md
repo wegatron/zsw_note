@@ -130,6 +130,8 @@ refere to: [线性代数之线性代数之Cholesky分解](https://www.qiujiawei.
 ### LDLT分解
 LDLT分解法实际上是Cholesky分解法的改进，因为Cholesky分解法虽然不需要选主元，但其运算过程中涉及到开方问题，而LDLT分解法则避免了这一问题，可用于求解线性方程组。 也需要分解对象为方阵，分解结果为$A=LDL^T$。其中L为一下三角形单位矩阵(即主对角线元素皆为1)，D为一对角矩阵(只在主对角线上有元素，其余皆为零)，$L^T$为L的转置矩阵。
 
+//TODO Eigen中LDLT分解, 并不需要对称????
+
 ### Jacobian分解
 TODO 
 
