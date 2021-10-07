@@ -66,6 +66,8 @@ $$
 \end{bmatrix}
 $$
 
+这里求解时, 可以使用SVD分解替代Eigen分解.
+
 __代码实现__
 
 公式是上边这么写(看起来简单好理解), 代码实现时需要考虑:
@@ -385,9 +387,19 @@ $$
 0 & 0 & 0 & 0 & 0 & 0 & -\frac{{u_2}}{{{{u_2}}^{2}}+1} & -\frac{{v_2}}{{{{v_2}}^{2}}+1} & \frac{{{{v_2}}^{2}}}{{{{v_2}}^{2}}+1}+\frac{{{{u_2}}^{2}}}{{{{u_2}}^{2}}+1}\end{pmatrix}
 $$
 
-这里需要对$\mathbf{M}$做归一化处理.
+这里需要对$\mathbf{M}$做归一化处理. 找出$\mathbf{Q}$最小的eigen vector, 然后恢复$uv^*_i = [\frac{x_i}{z_i} \; \frac{y_i}{z_i}]$.
 
-找出$\mathbf{Q}$最小的eigen vector, 然后恢复$uv^*_i = [\frac{x_i}{z_i} \; \frac{y_i}{z_i}]$.
+
+
+改进, 这里其实也是求解:
+$$
+\arg \min_\mathbf{c} \frac{1}{2} [\parallel \begin{bmatrix}\mathbf{M}\\ w_r\mathbf{AP} \end{bmatrix} \mathbf{c}\parallel^2
+$$
+对矩阵$\begin{bmatrix} \mathbf{M}\\ w_r\mathbf{AP} \end{bmatrix}$ 进行SVD分解, 求出其最小奇异值对应的向量即可(可以减少部分计算量).
+
+使用稀疏矩阵减少矩阵相乘和分解的计算量. https://github.com/yixuan/spectra
+
+
 
 -[x] triangulation 细化
 
@@ -445,6 +457,10 @@ __单纯使用特征点跟踪constraint和edge length constraint无法避免flip
 ## 数据测试
 
 
+
+## 性能优化
+
+$\mathbf{P}$求解矩阵运算较为耗时, 可以通过优化元素的排序, 利用稀疏性, 来提高效率. 优化前 
 
 ## Reference
 
