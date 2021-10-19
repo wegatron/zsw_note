@@ -11,7 +11,20 @@ lipo -remove arm64 libvt2d.a -output libvt2d_s.a # 移除一个平台支持
 ./build_producer.py -t all -p ios
 ```
 
+
+
+cmake - 3.11版本以上, xcode - 12.2版本以上, 编译 mac Big Sur universal库:
+
+利用宏`CMAKE_OSX_ARCHITECTURES` 
+
+```cmake
+cmake .. "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
+```
+
+
+
 ## TODO
+
 To: shuangluo@apple.com
 1. guidedfilter的问题
 2. 关于iosLidar的一些效果展示

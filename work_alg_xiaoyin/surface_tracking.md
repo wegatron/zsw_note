@@ -303,7 +303,7 @@ $$
 
 可以先令$w_4 = 1$, 计算出$w_{1,2,3}$, 再将$w$归一化.   _验证:_$\begin{bmatrix}\mathrm{v}_1 & \mathrm{v}_2 & \mathrm{v}_3 & \mathrm{v}_4 \\ 1 & 1 & 1 & 1 \end{bmatrix} \cdot w = 0$.
 
-与论文《Template-based Monocular 3D Shape Recovery using Laplacian Meshes》一样, 对于Mesh中的顶点, 可以分为被跟踪的特征点$c$和其他点$\lambda$:
+与论文《Template-based Monocular 3D Shape Recovery using Laplacian Meshes》一样, 对于M.esh中的顶点, 可以分为被跟踪的特征点$c$和其他点$\lambda$:
 $$
 \left.
 \begin{aligned}
@@ -333,6 +333,26 @@ $$
 
 🌀同理, 计算$\mathbf{P}_{min}$,  $\mathbf{P} =\mathbf{I}_{3\times 3} \otimes \mathbf{P}_{min}$.
 
+
+
+矩阵乘法, 这里$\mathbf{A}$是一个非常稀疏的矩阵. 可以使用稀疏矩阵减小矩阵相乘计算量, 求逆之后也有很多本应该为0但非0的项.
+
+求解逆矩阵耗时对比:
+
+| 计算方式                                    | 耗时(ns) |
+| ------------------------------------------- | -------- |
+| `Eigen::MatrixXd.inverse` 内部为LU分解计算  | 270,330  |
+| `Eigen::LDLT`  Dense矩阵ldlt分解            | 281,049  |
+| `Eigen::SimplicialLDLT ` Sparse矩阵ldlt分解 | 72,301   |
+
+这里是对一个大小为$1120 \times 1120$的矩阵求逆.
+
+优化结果:
+
+![Dense matrix op](rc/dense_matrix_op_opt.png)
+
+![sparse matrix op](rc/sparse_matrix_op_opt.png)
+
 #### 特征点匹配
 
 这里使用opencv的GFTT来检测特征点, 然后使用KLT来跟踪. Graph Matching方法相对复杂, 这里使用相对简单的《Template-based Monocular 3D Shape Recovery》论文中的方法剔除outlier, 优化目标函数: 
@@ -352,7 +372,7 @@ $$
 $$
 \begin{aligned}
 &\arg \min_\mathbf{c} \frac{1}{2} [\parallel \mathbf{Mc} \parallel^2 + w_r^2\parallel \mathbf{APc} \parallel^2]\\
-&\mathbf{Mc} = \begin{bmatrix}1 & 0 & -u_0 & 0 & 0 & 0 & ...\\ 0 & 1 & -v_0 & 0 & 0 & 0 & ...\\0 & 0 & 0 & 1 & 0 & -u_1 & ...\\ 0 & 0 & 0 & 0 & 1 & -v_1 & ...\end{bmatrix} \begin{bmatrix} x_0\\y_0\\z_0\\x_1\\y_1\\z_1\\ ...\end{bmatrix}\\
+&\mathbf{Mc} = \begin{bmatrix}1 & 0 & -u_0 & 0 & 0 & 0 & ...\\ 0 & 1 & -v_0 & 0 & 0 & 0 & ...\\0 & 0 & 0 & 1 & 0 & -u_1 & ...\\ 0 & 0 & 0 & 0 & 1 & -v_1 & ...\end{bmatrix} \begin{bmatrix} x_0\\y_0\\1\\x_1\\y_1\\1\\ ...\end{bmatrix}\\
 \end{aligned}
 $$
 
@@ -391,15 +411,29 @@ $$
 
 
 
-改进, 这里其实也是求解:
+这里其实也是求解:
 $$
 \arg \min_\mathbf{c} \frac{1}{2} [\parallel \begin{bmatrix}\mathbf{M}\\ w_r\mathbf{AP} \end{bmatrix} \mathbf{c}\parallel^2
 $$
-对矩阵$\begin{bmatrix} \mathbf{M}\\ w_r\mathbf{AP} \end{bmatrix}$ 进行SVD分解, 求出其最小奇异值对应的向量即可(可以减少部分计算量).
+对矩阵$\mathbf{G} = \begin{bmatrix} \mathbf{M}\\ w_r\mathbf{AP} \end{bmatrix}$ 进行SVD分解, 求出其最小奇异值对应的向量即可(可以减少部分计算量).  但该矩阵维度更大, 且测试发现矩阵维度较大时(1000 x 1000)SVD分解耗时会更多.
 
 使用稀疏矩阵减少矩阵相乘和分解的计算量. https://github.com/yixuan/spectra
 
+| 求解目标                  | 求解方式                                                    | 耗时(ms) |
+| ------------------------- | ----------------------------------------------------------- | -------- |
+| $\mathbf{G}_{m \times n}$ | `Eigen::BDSVD`                                              | 319      |
+| $\mathbf{G}^T\mathbf{G}$  | `Eigen::Eigen::SelfAdjointEigenSolver`                      | 17       |
+| $\mathbf{G}^T\mathbf{G}$  | `Eigen::BDSVD`                                              | 333      |
+| $\mathbf{G}^T\mathbf{G}$  | `Spectra::SymEigsSolver<Spectra::DenseSymMatProd<double>>`  | 1        |
+| $\mathbf{G}^T\mathbf{G}$  | `Spectra::SymEigsSolver<Spectra::SparseSymMatProd<double>>` | 4        |
 
+这里$m$是三角形对的数量, $n$是控制点的数量, $m \gg n$  (这里m=10165, n=240).  
+
+测试机配置: `windows` , `Intel(R) Core(TM) i7-9700F CPU @ 3.00GHz   3.00 GHz` , `RAM 32 GB`
+
+然而对于我们所用矩阵, 不收敛. 考虑使用lapack. 需要计算特征值的矩阵(这里取了abs).
+
+![mat to calc eigen](rc/mat_to_calc_eigen.png)
 
 -[x] triangulation 细化
 
@@ -461,6 +495,28 @@ __单纯使用特征点跟踪constraint和edge length constraint无法避免flip
 ## 性能优化
 
 $\mathbf{P}$求解矩阵运算较为耗时, 可以通过优化元素的排序, 利用稀疏性, 来提高效率. 优化前 
+
+
+
+## 特征点跟踪优化
+
+使用其他更优的跟踪方法:
+
+DIS
+
+[Sparsity Model for Robust Optical Flow Estimation at Motion Discontinuities](https://xiaohuishen.github.io/assets/cvpr10_sparsityforflow.pdf)
+
+[EpicFlow: Edge-Preserving Interpolation of Correspondences for Optical Flow](https://openaccess.thecvf.com/content_cvpr_2015/papers/Revaud_EpicFlow_Edge-Preserving_Interpolation_2015_CVPR_paper.pdf)
+
+[Efficient Coarse-to-Fine PatchMatch for Large Displacement Optical Flow](https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Hu_Efficient_Coarse-To-Fine_PatchMatch_CVPR_2016_paper.pdf)
+
+https://github.com/YinlinHu/CPM
+
+
+
+sift flow
+
+https://stackoverflow.com/questions/24762875/optical-flow-vs-keypoint-matching-what-are-the-differences
 
 ## Reference
 

@@ -70,6 +70,43 @@ a = [1,2,3,4]
 p = np.array(a, dtype=np.float)
 # data type
 print(np.dtype(p[0]))
+
+# ndarray to matrix
+mat_p = np.asmatrix(p)
+
+# matrix transpose
+mat_p.transpose()
+
+# matrix multiply
+mat_res = np.matmul(mat_p, mat_q)
+
+# visualize matrix or ndarray
+plt.imshow(mat_res, vmin=0.0, vmax=0.3, cmap='jet')
+plt.colorbar()
+plt.show()
+
+# eigen
+from numpy import linalg as LA
+w, v = LA.eigh(A)
+
+# read matrix data
+def read_dump_mat(file_path):
+    f = open(file_path, 'r')
+    head_strs = f.readline().split()
+    row = int(head_strs[0])
+    col = int(head_strs[1])
+    #cnd = int(head_strs[2])
+
+    mat = np.empty((row, col))
+
+    print('read {}, rows={} cols={}'.format(file_path, row, col))
+
+    for r in range(row):
+        line_strs = f.readline().split()
+        assert(len(line_strs) == col)
+        for c in range(col):
+            mat[r, c] = float(line_strs[c])
+    return mat
 ```
 
 Pandas:
