@@ -31,3 +31,9 @@ Options--->Hide/Show
 ```
 LC_CTYPE='zh_CN.UTF-8'
 ```
+
+* set c++ code style
+```
+M-x set-style
+cc-mode
+```
