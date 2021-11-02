@@ -1,0 +1,196 @@
+
+\documentclass[UTF8]{ctexart}
+
+% PACKAGES FOR TITLES
+\usepackage{titlesec}
+\usepackage{color}
+
+\usepackage{graphicx}
+\graphicspath{ {../../../rc/} }
+
+\usepackage{subfig} % Numbered and caption subfigures using \subfloat
+\usepackage{caption} % Coloured captions
+\usepackage{transparent}
+
+% STANDARD MATH PACKAGES
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{bm}
+\usepackage[overload]{empheq}  % For braced-style systems of equations
+
+% PACKAGES FOR TABLES
+\usepackage{tabularx}
+\usepackage{longtable} % tables that can span several pages
+\usepackage{colortbl}
+
+% PACKAGES FOR ALGORITHMS (PSEUDO-CODE)
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+% PACKAGES FOR ITEMIZE & ENUMERATES 
+\usepackage{enumitem}
+
+% PACKAGES FOR REFERENCES & BIBLIOGRAPHY
+\usepackage[colorlinks=true,linkcolor=black,anchorcolor=black,citecolor=black,filecolor=black,menucolor=black,runcolor=black,urlcolor=black]{hyperref} % Adds clickable links at references
+\usepackage{cleveref}
+\usepackage[square, numbers, sort&compress]{natbib} % Square brackets, citing references with numbers, citations sorted by appearance in the text and compressed
+\bibliographystyle{plain} % You may use a different style adapted to your field
+
+% OTHER PACKAGES
+\usepackage{amsthm,thmtools,xcolor} % Coloured "Theorem"
+\usepackage{comment} % Comment part of code
+\usepackage{fancyhdr} % Fancy headers and footers
+\usepackage{lipsum} % Insert dummy text
+\usepackage{tcolorbox} % Create coloured boxes (e.g. the one for the key-words)
+
+% Do not change Configuration_files/config.tex file unless you really know what you are doing. 
+% This file ends the configuration procedures (e.g. customizing commands, definition of new commands)
+\input{Configuration_files/config}
+
+\title{Into Modern Graphics Rendering}
+\author{wegatron}
+\date{2021.11.2}
+
+\begin{document}
+\maketitle
+
+\section{现代图形API VS 传统图形API}
+
+\begin{itemize}
+\item 渲染管线状态维护
+  \\传统的图形API使用隐式、全局的状态管理机制. 缺陷: 1.无法精准的控制管线当前状态; 2.应用程序必须频繁的调用API来设置管线状态和恢复; 3.API还会对每个渲染状态的设置进行校验和二次处理, 比如合并状态统一提交(新型 GPU 会将这些固定管线状态合并成单一硬件状态, 因此需要Driver在运行时为不同的状态组合创建、查找缓存内部的管线状态集合, 这很可能会导致管线卡顿, 同时额外增大了开销).
+  \begin{figure}[h]
+    \includegraphics[width=10cm]{render_state_merge.jpg}
+    \centering
+  \end{figure}
+  \\现代图形API使用PipelineState将管道状态提前创建并绑定, 在渲染时, 通过设置不同的 PipelineState, Driver只需要少量的切换开销即可将预先创建的状态绑定到GPU中, 而无需像传统API那样校验每种状态有效性以及动态合并状态, 从而降低了绘制调用开销, 并且可以大幅增加每帧的绘制调用次数.
+  \begin{figure}[h]
+    \includegraphics[width=10cm]{pipline_state_object.jpg}
+    \centering
+  \end{figure}
+\item 资源绑定
+  \\与渲染管线状态类似, 传统图形API逐个API调用来实现资源的绑定. 而现代图形API通过RootSingature(D3D12) 或者PipelineLayout(Vulkan) 通过Descriptor预先设置好Shader所需要使用的资源布局信息, 包括:Constant、Texture(SRV)、Buffer(UAV)、Sampler 等, 在渲染时Shader通过DescriptorTable或者DescriptorSet用间接寻址方式获取资源, 无需渲染时绑定, 大大降低了资源绑定和校验开销, 从而提高了渲染性能.
+  \\Metal 虽然也有 PipelineState, 但并没有提供指定 Shader Resource Layout的机制.
+\item 显式内存管理
+  \\传统的API的内存管理是隐式的, 当创建资源时 Runtime/Driver 内部也同时创建用于这个资源的内存, 这个过程对开发者是透明的, 尽管接口简单, 但带来的问题是很难优化内存分配, 并且容易造成 GPU 内存碎片.
+  \\现代API 都提供了 CPU/GPU 堆内存管理接口, 可以通过创建堆, 在堆上分配空间的方式来创建资源, 应用程序可以精准的控制资源堆内存的分配. 比如可以通过资源别名(在同一堆空间中创建不同的资源), 在不同的时段可重复利用同一的设备内存来完成渲染逻辑, 从而更有效的使用有限的 GPU 内存资源.
+  \begin{figure}[h]
+    \includegraphics[width=10cm]{memory_management.jpg}
+    \centering
+  \end{figure}
+\item 状态的跟踪和同步
+  \\传统 API 在 Driver 内部维护跟踪状态, 自动管理资源及调度, 以及进行运行时的校验. Driver 还要负责 CPU 与 GPU 的同步. 典型的例子: 动态更新 GPU Buffer 数据, 如果此时 GPU 正在使用这个 Buffer, 则 Map/Lock 之后 API返回的是 Runtime/Driver 内部动态创建的新内存地址, 以更新新数据, 当 GPU 使用完旧内存后, 再使用新数据. 另外, API 的提示标记并不能保证 Driver 一定按照预想的方式执行, Driver 会根据自身当前的状态来决定, 比如上述情况, 即使在 Map 时指定了 Discard, 也不能完全保证运行时 CPU 和 GPU 是完全异步的.
+  \\现代 API 通过使用资源屏障 (Resource Barrier) 来要求应用层明确控制资源的状态迁移, 通过Fence对象和WaitFence函数完成CPU和GPU的同步. 整个过程完全由应用程序来控制, 这样应用程序可以根据需要, 更加精准的控制同步时机.
+\item 并行
+  现代 API 都增加了 Command List 或 Command Buffer 记录渲染指令, 再通过 Queue 提交到 GPU 中, 而每个 Command List/Buffer 都可以在不同的线程中单独填充, 这意味着可以并行录制渲染指令, 充分发挥了现代 CPU 多核的并行能力. 甚至还可以创建多个异步计算或者上传数据的 Command Queue, 利  用 GPU 的并行机制实现渲染和计算、上传数据的并行.
+\item shader code
+\item 附加模块支持
+\end{itemize}
+
+传统图形API: Direct3D/OpenGL(ES):
+\begin{itemize}
+\item 管线状态是隐式的、全局的.
+  \\管线的当前状态隐藏在 API(Runtime/Driver)内部, 应用程序无法精准的控制管线当前状态
+\item 频繁的 API 调用.
+  \\由于整个图形 API 渲染管线是基于状态的, 所以应用程序必须频繁的调用 API 来设置管线状态和恢复状态, 这就使得 API 调用导致的 CPU 开销也成为了渲染瓶颈.
+\item 状态切换开销
+  \\传统 API 会对每个渲染状态的设置进行\textbf{校验}和\textbf{二次处理}, 比如\textbf{合并状态}统一提交, 这样就造成了状态的切换也有一定的开销. 开发者们各显神通减少状态的切换(例如, 状态编码进行排序, 构建状态树形结构等). 本质上都是在 CPU 端做额外的预处理工作来换取GPU的时间.
+  \\现代 GPU 硬件上, 分散的状态设置成为了性能提升的障碍. 例如, 新型 GPU 会将这些固定管线状态合并成单一硬件状态. 但由于 API 允许单独设置这些管道状态, 因此 Driver 很可能在运行时\textbf{为不同的状态组合创建、查找缓存内部的管线状态集合}, 这很可能会导致管线卡顿, 同时额外增大了开销.
+  \begin{figure}[h]
+    \includegraphics[width=10cm]{render_state_merge.jpg}
+    \centering
+  \end{figure}
+\item 复杂的驱动层逻辑.
+  \\在 Driver \textbf{内部维护跟踪状态, 自动管理资源及调度, 以及进行运行时的校验}, 以保证渲染正确. 同时为了便于调试, 图形 API 的获取错误接口(glGetError) 也需要正确的返回错误, 但也增加了 CPU 开销. 另外, Driver 还要负责 CPU 与 GPU 的同步.
+  \\典型的例子: 动态更新GPU Buffer数据, 如果此时 GPU 正在使用这个 Buffer, 则 Map/Lock 之后 API 返回的是 Runtime/Driver 内部动态创建的新内存地址, 以更新新数据, 当 GPU 使用完旧内存后, 再使用新数据. 另外, API 的提示标记并不能保证Driver一定按照预想的方式执行, Driver会根据自身当前的状态来决定, 比如上述情况, 即使在 Map 时指定了 Discard, 也不能完全保证运行时CPU和GPU是完全异步的.
+  \\另一种“隐式”的体现是GPU资源的状态跟踪与同步, 比如当前渲染阶段的 Render Target , 也许会成为下一个渲染阶段所使用的Shader可访问的纹理资源(典型的如后处理中的 Scene Texture), 为了维护资源状态的正确, 就需要使用 GPU 内部的同步机制如Resource Barrier来保证渲染次序. 但这样的"隐式"行为导致应用程序无法深入到内部以最优化的方式减少同步, 也无法进一步提升同步性能.
+\item Shader 的编译
+\item 隐式的渲染工作提交
+  \\传统 API 渲染工作的提交一般情况下是 Runtime/Driver 内部执行的, 比如当内部的 Render Command Buffer 已满或者 CPU 端通过 Map 访问或者写入资源数据时, Runtime/Driver 会自动提交当前的渲染工作, 并等待 GPU 完成. 由于这种隐式的机制, 导致应用程序很难做到最优化的 CPU、GPU 同步.
+\end{itemize}
+
+现代图形API: Direct3D12/Vulkan/Metal
+\begin{itemize}
+\item 低消耗的状态切换
+  \\使用 PipelineState 将管道状态提前创建并绑定, 在渲染时, 通过设置不同的 PipelineState, Driver 只需要少量的切换开销即可将预先创建的状态绑定到 GPU 中, 而无需像传统 API 那样校验每种状态有效性以及动态合并状态, 从而降低了绘制调用开销, 并且可以大幅增加每帧的绘制调用次数.
+  \begin{figure}[h]
+    \includegraphics[width=10cm]{pipline_state_object.jpg}
+    \centering
+  \end{figure}
+\item 预置的 Shader 资源布局和绑定
+  \\通过 RootSingature(D3D12)或者 PipelineLayout(Vulkan)通过 Descriptor 预先设置好 Shader 所需要使用的资源布局信息, 包括：Constant、Texture(SRV)、Buffer(UAV)、Sampler 等, 在渲染时 Shader 通过 DescriptorTable 或者 DescriptorSet 用间接寻址方式获取资源, 无需渲染时绑定, 大大降低了资源绑定和校验开销, 从而提高了渲染性能.
+  \\Metal 虽然也有 PipelineState, 但并没有提供指定 Shader Resource Layout 的机制, 绑定 Shader 资源时和传统 API 类似, 使用 setFragmentTexture/setVertexTexture 之类的函数设置.
+  \begin{figure}[h]
+    \includegraphics[width=10cm]{data_resource_binding.jpg}
+    \centering
+  \end{figure}
+\item 显式的资源状态管理
+  \\现代 API 通过使用资源屏障(Resource Barrier)来要求应用层明确控制资源的状态迁移,  Runtime/Driver 不再通过提示、假设或猜想进行自动的状态跟踪和维护, 而是完全由开发者来管理资源状态.
+\item 更加显式的渲染工作提交和 CPU/GPU 同步控制
+  \\现代 API 则提供了显式的控制渲染提交和同步控制接口. 应用程序通过使用 Command List(D3D12)或 Command Buffer(Vulkan/Metal)录制渲染命令, 再通过 Command Queue 提交到 GPU 中执行.
+  \\CPU 和 GPU 的同步是通过 Fence 对象和 WaitFence 函数完成, 整个过程完全由应用程序来控制, 这样应用程序可以根据需要, 更加精准的控制同步时机, 从而实现 CPU/GPU 最大化并行性能.
+\item 提供显式的 CPU/GPU 堆内存管理
+  \\传统的 API 的内存管理是隐式的, 当创建资源时 Runtime/Driver 内部也同时创建用于这个资源的内存, 这个过程对开发者是透明的, 尽管接口简单, 但带来的问题是很难优化内存分配, 并且容易造成 GPU 内存碎片.
+  \\现代API 都提供了 CPU/GPU 堆内存管理接口, 可以通过创建堆, 在堆上分配空间的方式来创建资源, 应用程序可以精准的控制资源堆内存的分配. 比如可以通过资源别名(在同一堆空间中创建不同的资源), 在不同的时段可重复利用同一的设备内存来完成渲染逻辑, 从而更有效的使用有限的 GPU 内存资源.
+  \begin{figure}[h]
+    \includegraphics[width=10cm]{memory_management.jpg}
+    \centering
+  \end{figure}
+\item 并行提交渲染工作
+  \\现代 API 都增加了 Command List 或 Command Buffer 记录渲染指令, 再通过 Queue 提交到 GPU 中, 而每个 Command List/Buffer 都可以在不同的线程中单独填充, 这意味着可以并行录制渲染指令, 充分发挥了现代 CPU 多核的并行能力. 甚至还可以创建多个异步计算或者上传数据的 Command Queue, 利用 GPU 的并行机制实现渲染和计算、上传数据的并行.
+\item Shader 预编译机制
+\item 实时 GI(RayTracying)
+\item 机器学习
+  \\同实时 GI 一样, 新一代 API 也都有各自的 ML 方案.
+  \\- D3D12：DirectML
+  \\- Vulkan：Vulkan ML
+  \\- Metal：基于 Performance Shader 的 ML
+\item 显式的多 GPU 支持
+\end{itemize}
+
+\section{基于现代图形 API 开发的挑战}
+要在现代 API 基础上实现更好的性能, 需要更多更复杂的图形管线管理开发工作. 由于是显式的, 更接近图形硬件的设计, 现代 API 的驱动不再负责传统 API Driver 复杂的内部逻辑, 但这些工作并不是自动消失, 而是转移到应用层, 由开发者负责. 传统 API 上和现代 API 上图形管线管理开发工作量的比较:
+\begin{figure}[h]
+  \includegraphics[width=10cm]{graphics_works.png}
+  \centering
+\end{figure}
+
+这些工作量包括:
+\begin{itemize}
+\item 重新设计图形 API 抽象接口.
+  \\通过PipelineState对象来维护渲染管线状态, Command List录制图形指令, 实现并行渲染. 资源屏障等, 来进行同步.
+
+\item 堆内存管理.
+  \\包括 GPU 和 CPU 内存, 精细控制内存预算和跟踪内存分配和使用, 甚至还要根据不同使用场景来定制内存管理策略. 比如根据 GPU 是否只读、CPU 是否只读、CPU/GPU 的写入频率等, 不同的情况需要对应不同的内存管理策略, 充分利用 GPU 的 Copy/Upload/Transfer 硬件引擎完成数据传输, 才能实现最佳的性能.
+
+\item 描述符(Descriptor)管理
+  \\在传统 API 上绑定 Shader 资源只需要简单调用形如 SetTexture/SetConstant/SetSampler 之类的接口即可, 而在现代 API 中, 通过 Shader 所需要使用的资源布局信息是预置的(前文所述), 渲染时需要通过 Descriptor 来间接寻址资源, 由于 Descriptor 也是一种 API(GPU 硬件) 资源, 一般来说 GPU 可见的 Descriptor 是有限的(硬件相关限制), 渲染时需要对有限的 GPU Descriptor 使用有效的管理方式加以重用, 才能完成复杂的渲染逻辑. 另外由于并行渲染的存在, Descriptor 的分配和释放还要考虑到线程同步, 如何在并行中减少线程同步所带来的开销也是需要仔细考虑的问题, 这进一步增加了管理复杂度.
+
+\item 渲染帧管理
+  \\为了最大化并行 CPU/GPU, Swapchain 通常需要创建多个back Buffer, 这样 GPU 绘制当前帧(或者上一帧), CPU 可以并行填充绘制下一帧的命令, 在开始录制每个 Frame 的渲染指令时, 可以通过这一帧上一次绘制的 GPU Fence 查询 GPU 是否完成上一次渲染, 如果完成则开始录制逻辑, 否则等待. 要达到这样的结果, 每个 Frame 需要有自己的 CommandList 和相关的 GPU 资源, 这就需要实现渲染帧逻辑, 还需要在提交到 GPU 渲染时对 Frame 进行调度管理.
+  \begin{figure}[h]
+    \includegraphics[width=10cm]{frame_management.jpg}
+    \centering
+  \end{figure}
+
+\item API 对象的生命周期控制
+  \\要保证 API 渲染、计算管线中在使用对象的过程中不能释放对象. 比如上层逻辑在 Frame2 中释放某个对象, 但这个对象还在 Frame1 中被使用, 则此时不能执行真正的释放, 需要通过 GPU Fence 事件通知或者轮询方式等到 Frame1 执行完成才能释放.
+
+\item 并行提交绘制指令
+  \\现代 API 的 Command List 都是 Thread Free 的, 所以可以实现多个线程并行填充绘制、计算指令, 以达到并行提交渲染工作的的目的. 可利用Task/Job System来实现.
+\end{itemize}
+
+\section{基于现代图形 API 的渲染管线设计}
+GPU 并行架构
+利用并行提交特性，渲染管线可设计为多线程结构，可根据当前 CPU 硬件线程数量动态决定 CommandList/Buffer 的数量，这样在架构上也是可缩放的。
+
+另外，现代 GPU 其内部都会有多个专用于不同功能的 GPU 硬件引擎，一般有图形（3D）、计算（Compute）、Copy（Transfer）三种，这三者在 GPU 内部可并行执行，如下图所示：
+
+%% \begin{figure}[h]
+%%   \includegraphics[width=10cm]{rendering_framework.jpg}
+%%   \centering
+%% \end{figure}
+
+\section{深入GPU硬件运行机制}
+
+\end{document}
