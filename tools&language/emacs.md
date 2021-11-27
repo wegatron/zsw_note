@@ -28,8 +28,12 @@ Options--->Hide/Show
 ```
 
 * chinese input
+.bashrc中加入
+
 ```
 LC_CTYPE='zh_CN.UTF-8'
+
+alias emacs='env LC_CTYPE=zh_CN.UTF-8 emacs'
 ```
 
 * set c++ code style

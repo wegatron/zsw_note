@@ -88,6 +88,7 @@
   \\传统的图形API使用隐式、全局的状态管理机制. 缺陷: 1.无法精准的控制管线当前状态; 2.应用程序必须频繁的调用API来设置管线状态和恢复; 3.API还会对每个渲染状态的设置进行校验和二次处理, 比如合并状态统一提交(新型 GPU 会将这些固定管线状态合并成单一硬件状态, 因此需要Driver在运行时为不同的状态组合创建、查找缓存内部的管线状态集合, 这很可能会导致管线卡顿, 同时额外增大了开销).
   \begin{figure}[H]
     \includegraphics[width=10cm]{render_state_merge.jpg}
+
     \centering
     \caption{D3D11分散的状态对象设置导致图形硬件切换的额外开销}
     \label{fig:gpu_rendering_pipline_state_merge}
