@@ -28,6 +28,7 @@ glslangValidator -V -o texture_shader_frag.spv shader_texture.frag
 spirv-cross --version 310 --es texture_shader_vert.spv --output parse.vert
 
 # 将spir-v转译成msl
+spirv-cross --msl --msl-version 2.1 ../samples/data/shaders/texture_quad.spv --output ../samples/data/shaders/texture_quad.msl
 ```
 
 ### SPIRV-Cross
