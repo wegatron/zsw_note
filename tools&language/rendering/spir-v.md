@@ -4,6 +4,8 @@
 
 SPIR-V以二进制模块为单位, 一个模块包含一个或多个函数, 构成一个独立的pipline stage, 比如vertex shader.
 
+SPIR-V Shader介绍: https://www.khronos.org/assets/uploads/developers/library/2016-vulkan-devday-uk/3-Intro-to-spir-v-shaders.pdf
+
 ## 相关工具
 
 ### glslangValidator
@@ -63,4 +65,12 @@ https://github.com/KhronosGroup/glslang/issues/2126
 `in`, `out`
 
 ## Reference
-[]()
+
+16位浮点数支持: https://zhuanlan.zhihu.com/p/406621755
+
+glslc test.frag -o test.spv
+spirv-cross --version 300 --es --remap u_subpass0 get_frag_func0 4 --remap u_subpass1 get_frag_func1 4 test.spv --output test_inv.frag
+
+CB3D510326AB
+FA25761701BF
+7DADE8999F31

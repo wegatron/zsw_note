@@ -81,6 +81,7 @@ Question:
 4. swap chain中的vkimage大小设置为多少合适?
 5. vulkan 对 glsl的版本要求, glsl各版本之间的转换.
 
+
 ### 一些核心概念
 <figure class="image">
   <img src="../../rc/vulkan_hierarchy.png" width=600>
@@ -199,9 +200,52 @@ Question:
         VK_CHECK_RESULT(vkCreateImage(device, &imageCreateInfo, nullptr, &texture.image));        
         ```
 
+### Vulkan Synchronization
+
+与Metal中的`MTLFence不同`, 在Vulkan中通过加入Barrier, 拦住后续dstStageMask中的任务, 让srcStageMask中的任务先执行完成.
+
+```c++
+void vkCmdPipelineBarrier (
+    VkCommandBuffer commandBuffer,
+    VkPipelineStageFlags srcStageMask,
+    VkPipelineStageFlags dstStageMask,
+    VkDependencyFlags dependencyFlags,
+    uint32_t memoryBarrierCount,
+    const VkMemoryBarrier* pMemoryBarriers,
+    uint32_t bufferMemoryBarrierCount,
+    const VkBufferMemoryBarrier* pBufferMemoryBarriers,
+    uint32_t imageMemoryBarrierCount,
+    const VkImageMemoryBarrier* pImageMemoryBarriers
+);
+
+/// example
+// write after read hazard
+vkCmdCopyBuffer(cb, buffer_a, buffer_b, 1, &region); /* a is copy src */
+vkCmdCopyBuffer(cb, buffer_c, buffer_a, 1, &region); /* a is copy dst */
+
+// juse use execution barrier is fine
+vkCmdCopyBuffer(cb, buffer_a, buffer_b, 1, &region);
+vkCmdPipelineBarrier(cb, VK_PIPELINE_STAGE_TRANSFER_BIT,
+    VK_PIPELINE_STAGE_TRANSFER_BIT,
+    0, 0, nullptr, 0, nullptr, 0,nullptr);
+vkCmdCopyBuffer(cb, buffer_c, buffer_a, 1, &region); 
+```
+
+```c++
+typedef struct VkMemoryBarrier {
+    VkStructureType sType;
+    const void* pNext;
+    VkAccessFlags srcAccessMask;
+    VkAccessFlags dstAccessMask;
+} VkMemoryBarrier;
+```
+
+
+
+
 ## Reference
 [khronos vulkan official site](https://www.khronos.org/vulkan/)
 [lunarg vulkan site](https://vulkan.lunarg.com/doc/sdk/1.2.162.1/windows/tutorial/html/index.html)
 
 [Understanding Vulkan® Objects](https://gpuopen.com/learn/understanding-vulkan-objects/)
-
+[Vulkan Synchronization](https://www.youtube.com/watch?v=JvAIdtAZnAw)

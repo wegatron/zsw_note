@@ -9,6 +9,11 @@
     gcc -O3 -fomit-frame-pointer -fverbose-asm -S main.cpp -o /tmp/main.S
     ```
 
+    // armv8 自动矢量化
+    ```bash
+    ./android_sdk/ndk/21.2.6472646/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android26-clang++ -target armv8 -mfloat-abi=hard -O3 -S tmp.cpp -o tmp.S
+    ```
+
     也可以使用在线的工具: https://godbolt.org/
 
 * `-march=native`
@@ -434,6 +439,8 @@ void func(int * a, int n)
 {
     for(auto i=0; i<n; ++i)
     {
+        // 这里只有在a[i] = 0时才会被用到, 若令a[i] = 1则会矢量化赋值
+        // 另外, memset还会绕过缓存, 直接写入, 因此少一次读取过程的时间消耗
         a[i] = 0;
     }
 }
@@ -483,10 +490,12 @@ func(int*, int*, int):
     paddd ...
     ```
 
-    在ARM机器上, ...
-    对于arm机器, 在编译时需要加上`-neon`, 自动开启矢量优化.
-    ------->TODO
-
+    对于ARM, android, 在编译时需要加上`-target armv8  -mfloat-abi=hard`, 自动开启矢量优化.
+    arm中矢量化的汇编代码应该是`v*`
+    ```c++
+    vldr    s0, [r3]
+    vadd.f32 s0, s2, s0
+    ```
 
 * SIMD加速数据填充:
     ```c++
@@ -717,7 +726,11 @@ func(int*, int*, int):
     ...
     ```
 
+## 访存优化
+
+
 # 参考资料
 * https://github.com/parallel101/course/tree/master/04
+* https://github.com/parallel101/course/tree/master/07
 * https://people.cs.clemson.edu/~dhouse/courses/405/papers/optimize.pdf
 * Optimizing software in C++ An optimization guide for Windows, Linux and Mac platforms(By Agner Fog. Technical University of Denmark)

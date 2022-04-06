@@ -8,7 +8,7 @@ sudo apt install apt-transport-https ca-certificates curl software-properties-co
 # 为国内的 azure 仓库添加 GPG Key
 curl -fsSL https://mirror.azure.cn/docker-ce/linux/ubuntu/gpg | sudo apt-key add -
 # 添加 docker 仓库到 Apt 源
-sudo add-apt-repository "deb [arch=amd64] https://mirror.azure.cn/docker-ce/linux/ubuntu bionic stable"
+sudo add-apt-repository "deb [arch=amd64] https://mirror.azure.cn/docker-ce/linux/ubuntu focal stable"
 # 安装
 sudo apt update
 sudo apt install docker-ce docker-compose

@@ -12,3 +12,9 @@ ssh-add
 ## deepwine 安装
 参考 https://github.com/zq1997/deepin-wine
 中文乱码问题: 安装fonts-wqy-microhei完美解决
+
+对于英文系统, 在启动脚本中增加
+```
+export LANG=zh_CN.UTF-8
+export LANGUAGE=zh_CN:en_US
+```
