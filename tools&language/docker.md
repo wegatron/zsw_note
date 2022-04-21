@@ -101,6 +101,11 @@ RUN buildDeps='gcc libc6-dev make wget' \
     && apt-get purge -y --auto-remove $buildDeps
 ```
 
+### 将container保存到image
+```bash
+docker save [container]
+```
+
 ### VOLUME命令
 容器运行时应该尽量保持容器存储层不发生写操作, 对于需要动态改动的数据应当保存于卷(volume)中. 在Docker file中通过`VOLUME`命令来指定某些目录挂载为匿名卷(无法指定挂载到的宿主机目录, 因此会默认挂载到宿主机的/var/lib/docker/volumes下的一个随机名称的目录下). 
 
@@ -146,6 +151,28 @@ Successfully built 44aa4490ce2c
 
 ## Docker运行Nvidia
 
+安装`nvidia-toolkit`:
+对于mint需要根据`os-release`, 以及nvidia官网, 查看Identifier, linux mint20.3对应的是`ubuntu20.04`
+```bash
+#distribution=$(. /etc/os-release;echo $ID$VERSION_ID) \
+distribution=ubuntu20.04 \
+    && curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add - \
+    && curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+
+sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit
+sudo systemctl restart docker
+```
+
+运行docker:
+```bash
+sudo docker run --gpus all --rm -v /home/wegatron/win-data/opensource_code:/opensource_code -ti ca04e7f7c8e5 /bin/bash
+```
+
+测试
+```bash
+nvidia-smi
+```
+
 在使用gcc编译包含有cuda头文件的cpp文件的时候出现cuda_runtime_api.h中未定义某类变量的错误 [参考](https://blog.csdn.net/mingyuan_liu/article/details/106210424)
 ```bash
 /usr/local/cuda/include/cuda_runtime_api.h:9580:60: error: ‘cudaGraphExec_t’ was not declared in this scope
@@ -185,5 +212,4 @@ docker commit -a "wegatron" -m "install ***" -p [container id] [rep:tag]
 ## Reference
 [docker小记](https://yeasy.gitbooks.io/docker_practice/content/image/build.html)
 [docker volume](https://www.binss.me/blog/learn-docker-with-me-about-volume/)
-[Docker运行NVIDIA容器](https://cloud-atlas.readthedocs.io/zh_CN/latest/docker/gpu/nvidia-docker.html)
-[](https://www.jb51.net/article/134449.htm)
+[docker使用GPU总结](https://blog.csdn.net/weixin_43975924/article/details/104046790)
