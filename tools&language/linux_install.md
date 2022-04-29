@@ -54,6 +54,17 @@
 
 [Fix Windows 10 Or 8 Partition Mounted As Read-Only On Linux When Dual Booting](https://www.linuxuprising.com/2019/01/fix-windows-10-or-8-partition-mounted.html)
 
+
+## linux 删除多余的kernel
+
+```bash
+#显示当前分区
+uname -r
+```
+
+再在包管理器中搜索`linux-image`, `linux-headers`查找相应的没有用的kernel(按照安装状态排序), 删除无用的kernel.
+
+
 ## Reference
 [linux 安装教程](https://linuxmint-installation-guide.readthedocs.io/zh_CN/latest/burn.html)
 [ACHI-RAID-NVME](https://www.v2ex.com/t/534791)
