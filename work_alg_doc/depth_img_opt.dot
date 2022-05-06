@@ -1,0 +1,41 @@
+digraph hierarchy {
+dpi = 300
+ratio = "compress"
+
+graph [label="黄色部分是对彩图进行操作, \l灰色部分是对深度图的操作\l", fontname="FangSong", labelloc=t, fontsize=13];
+
+node[shape=record, style="filled,rounded", fontname="FangSong", fillcolor=gray95, penwidth=0.5]
+d1[label="{
+低分辨率深度图
+}"]
+
+d2[label="深度图帧间滤波"]
+
+d3[label="深度图放大\n到彩图大小,\n并进行高斯平滑\n"]
+
+d4[label="sobel算子计算\l深度图梯度"]
+
+m1[label="同时考虑深度梯度和\n颜色梯度的canny算子\n计算融合边界"]
+
+m2[label="根据拓扑连通性,\n搜索临近同类深度\n像素进行加权平均"]
+
+node[shape=record, style="filled,rounded", fontname="FangSong", fillcolor=gold1, penwidth=0.5]
+
+c1[label="高分辨率彩色图"]
+
+c2[label="光流跟踪计算\n帧间像素匹配"]
+
+c3[label="sobel算子计\l算彩图梯度"]
+
+
+d1->d2
+d2->d3
+d3->d4
+d4->m1
+m1->m2
+
+c1->c2
+c1->c3
+c2->d2[label="彩图和深\l度图像素\l是对应的\l" fontname="FangSong" fontsize=6, penwidth=0.5]
+c3->m1
+}
