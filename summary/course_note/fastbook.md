@@ -93,7 +93,9 @@
         item_tfms=Resize(128))
     ```
     
-* DataLoader, 根据DataBlock加载数据.
+* DataLoader, 根据DataBlock加载数据, 是一个数据加载器.
+    
+    需要指定几个函数: get_items, splitter, get_x, get_y
     
     ```python
     dls = dblock.dataloaders(path)
@@ -104,7 +106,18 @@
     xb.shape, yb.shape
     ```
     
-    DataLoader中包DataSet: train, valid, test?
+    DataLoader中包: train, valid, test?
+    
+* DataSet, 包含了整个数据集合.
+    
+    ```python
+    df = pd.read_csv(path/'train.csv')
+    dblock = DataBlock(get_x = lambda r: r['fname'], get_y = lambda r: r['labels'])
+    dsets = dblock.datasets(df) # 
+    dsets.train[0]
+    ```
+    
+    
     
 * DataAugmentation, 数据增强， 创建原始数据的多种变体. 
 
@@ -139,6 +152,7 @@
   lr_min,lr_steep = learn.lr_find(suggest_funcs=(minimum, steep))# 可以得到上面learning rate的图
   
   learn.fine_tune?? # 包含了learning rate find的过程
+  # 专门用来做transform learning
   
   learn.learn_model
   ```
