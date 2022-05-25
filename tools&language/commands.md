@@ -38,3 +38,11 @@ xargs sed -i "" 's/SDKROOT = macosx/SDKROOT = iphoneos/g'
 ```bash
 find ./ -name=project.pbxproj -exec git stage {} \;
 ```
+
+## 同步文件内容
+```bash
+# -v verbose
+# -r --recursive 对子目录以递归模式处理
+# -u --update 仅仅进行更新, 也就是跳过所有已经存在于DST, 并且文件时间晚于要备份的文件, 不覆盖更新的文件.
+rsync -vru [src] [dst]
+```

@@ -155,7 +155,14 @@ android {
     但是暂时也没有把GCC删掉,Google会一直等到libc++(Clang的c++标准库实现, gcc使用libstdc++)足够稳定后删掉GCC.
 
 ## Java和C++
-
+JNI运行时加载C++动态库, 调用其中的函数.
+```java
+public class RendererJNI implements GLSurfaceView.Renderer {
+    // Used to load the 'native-lib' library on application startup.
+    static {
+        System.loadLibrary("native-lib");
+    }
+```
 
 ## 简单的Android应用
 这里以helo-gl2为例[@Android demo项目(包括opengl es)](https://github.com/android/ndk-samples.git)

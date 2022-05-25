@@ -21,6 +21,8 @@ cmake - 3.11版本以上, xcode - 12.2版本以上, 编译 mac Big Sur universal
 cmake .. "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
 ```
 
+下载container
+`windows` -> `device and simulator` 
 
 
 ## TODO

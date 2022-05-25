@@ -162,19 +162,14 @@ drop：我要丢弃该commit（缩写:d）
 ```
 
 ## svn patch 制作
-```bash
-svn revert textdraw/source/qevttextrender_base.h textdraw/source/qevttextrender_base.cpp
-svn up
-cp textdraw/source/qevttextrender_base.h textdraw/source/qevttextrender_base.h.bak
-cp textdraw/source/qevttextrender_base.cpp textdraw/source/qevttextrender_base.cpp.bak
-svn up -r25497 textdraw/source/qevttextrender_base.h textdraw/source/qevttextrender_base.cpp
-cp textdraw/source/qevttextrender_base.h.bak textdraw/source/qevttextrender_base.h
-cp textdraw/source/qevttextrender_base.cpp.bak textdraw/source/qevttextrender_base.cpp
-svn diff textdraw/source/qevttextrender_base.h textdraw/source/qevttextrender_base.cpp > zsw.patch
-svn revert textdraw/source/qevttextrender_base.h textdraw/source/qevttextrender_base.cpp
-svn up -r25497 textdraw/source/qevttextrender_base.h textdraw/source/qevttextrender_base.cpp
-```
 
+```bash
+svn up # 更新到最新
+svn diff -r [old revision] [files]
+
+# windows powershell set utf8
+chcp 65001
+```
 
 ## git 仓库过大问题
 修改 `~/gitconfig`, 添加如下信息

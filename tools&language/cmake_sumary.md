@@ -258,6 +258,17 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
 else
 ```
 
+## Android
+```bash
+cmake
+-Hpath/to/cmakelists/folder
+-Bpath/to/generated/ninja/project/debug/ABI
+-DANDROID_ABI=ABI                               // For example, arm64-v8a
+-DANDROID_PLATFORM=platform-version-string      // For example, android-16
+-DANDROID_NDK=android-sdk/ndk/ndk-version
+-DCMAKE_TOOLCHAIN_FILE=android-sdk/ndk/ndk-version/build/cmake/android.toolchain.cmake
+-G Ninja
+```
 
 
 # 一些问题和注意点

@@ -5,3 +5,4 @@
 *.blg
 _minted-graphics_rendering
 .vscode
+vx.json
