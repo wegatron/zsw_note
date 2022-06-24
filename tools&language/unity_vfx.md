@@ -112,6 +112,48 @@ __总结__:
 
 ![smoke](rc/unity_vfx_smoke.png)
 
+紫色条形烟雾:
+* 发射
+    发射频率: 100
+
+* 初始化
+    容量: 30000
+    生命周期: random(4, 6)
+    位置: 以葫口为中心的一个球形范围(radius=0.04)内初始化粒子
+    ~~速度: random(0.85, 1.42) 方向(0, 0, 1) [更新时设置了position没有意义]~~
+    初始大小: random(2, 2.67)
+    初始alpha: random(0.6, 1)
+
+* update 更新
+    Flipbook Player 使用filpbook textures来创建粒子模拟效果(通过增加texture index来实现).
+    利用Bezier曲线来控制粒子的位置, 通过加入一点随机值(0~0.1), 控制插值率(粒子生命结束时到达终点)
+
+* 绘制
+    粒子quad一直面朝camera
+    flipbook像素大小的设置(其实是一张图片, 通过uv来获取不同帧的纹理)
+    粒子quad大小与lifetime的关系曲线
+
+彩色粒子:
+![](rc/unity_genine_colorful_particles.png)
+
+* 发射
+* 初始化
+    粒子的大小: 1
+    粒子scale_x: random(0.001, 0.02)
+    粒子scale_y: random(0.05, 0.5)
+    [粒子direction与速度方向一致]
+* update 更新
+    Bezier曲线
+    ![](rc/unity_genine_colorful_particles_bezrier.png)
+    vector field扰动, 可以查看对应的3d纹理, unity assert中存放了3d纹理的数据.
+    ```
+    _typelessdata: 7c8388ff7b8389ff7b8289ff7b8188ff7a8188ff7b8187ff7c8188ff7b8189ff7b8089ff
+    ```
+    可以联系到saber效果类似
+
+精灵形态粒子:
+
+
 
 ## Reference
 最基础的simple vfx解析(球体表面+perl ling noise field控制粒子速度, 根据粒子速度得到朝向和颜色): https://www.youtube.com/watch?v=FvZNVQuLDjI

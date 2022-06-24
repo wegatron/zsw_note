@@ -1,3 +1,27 @@
+
+## Metal中的同步
+Metal 提供了二大资源管理机制, 一种是 tracked 的方式, 这是默认的资源管理模式, 与 OpenGL(ES) 类似;
+另一种是完全由开发者控制的, 也就是 untracked 方式. tracked 模式下, 资源在使用的过程中对于资源的
+依赖、修改、状态变更等都由 Metal Runtime 来跟踪和维护, 以保证资源使用的顺序以及在每个阶段都处
+于正确的访问状态. 而 untracked 则是由开发人员自己维护, 可以减少 Metal Runtime 的开销, 提高性能.
+[Metal Synchronization](https://developer.apple.com/documentation/metal/resource_synchronization?preferredLanguage=occ)
+
+* Semaphore, 用于 CPU 和 GPU 之间的同步. 
+    使用系统的semaphore, 事实上就是在commit之后添加一个callback, 设置semphore.
+    
+* MTLFence, 类似于VkEvents. 实现同一Queue中的同步. 通过updateFence和waitForFence来实现资源同步, 可以指定stage.
+    与VkEvent有所不同的是, MTLFence更像是一个0-1的信号量, wait之后自动归零. 而VkEvent则可以更自由的控制状态set, reset.
+    __tracked模式下无法使用MTLFence__
+
+* MTLEvent, 作用与MTLFence类似, 可以进行同一device, 不同Queue间同步. 无法指定stage. 可以设置0-n的值(set必须递增), 来进行set和wait.
+    __tracked模式下可以使用, iOS 12.0+__
+    __在执行到wait时会阻滞整个command queue, 因此若是先wait, 再signal需要分散在两个command queue中__
+
+* MTLSharedEvent, 不同device之间, CPU与GPU之间同步.
+
+
+
+
 ## Metal 相关资料
 [🍇 The Metal Framework](http://metalkit.org/)
 [🍋 Metal学习——基础概念与框架](https://hello-david.github.io/archives/98dc9fea.html)

@@ -164,10 +164,78 @@ public class RendererJNI implements GLSurfaceView.Renderer {
     }
 ```
 
-## 简单的Android应用
+## Android opengles 应用
 这里以helo-gl2为例[@Android demo项目(包括opengl es)](https://github.com/android/ndk-samples.git)
 
-如何添加一些UI组件, 用于作为输入参数?
+## Android opencv
+参考项目:[android-opencv](https://cloud.tencent.com/developer/article/1723892)
+这里构建ktolinproject
+[lib_opencv import失败处理](https://stackoverflow.com/questions/68649524/opencv-android-studio-module-importing-issue):
+1. copy sdk folder in your project directory
+2. Add below line in settings.gradle
+3. include ':sdk'
+4. click sync now
+
+文件结构:
+```
+android-opencv
+├── app
+    ├── src
+    ├── ...
+    ├── build.gradle # 添加了ktolin-android, ktolin-android-extension plugin
+├── ...
+├── sdk # opencv sdk
+├── build.gradle # 不修改
+├── ...
+└── settings.gradle # 这里添加include ':sdk'
+```
+
+使用时, 在cmake中加入:
+```cmake
+add_library(libopencv SHARED IMPORTED)
+
+#lib
+set_target_properties(libopencv PROPERTIES IMPORTED_LOCATION
+        ${CMAKE_SOURCE_DIR}/../../../../sdk/native/libs/${ANDROID_ABI}/libopencv_java4.so)
+
+#include dir
+include_directories(${CMAKE_SOURCE_DIR}/../../../../sdk/native/jni/include)
+```
+
+在`MainActivity.kt`中加载opencv库:
+
+```ktolin
+// 必须先加载这个库
+System.loadLibrary("opencv_java4") // so的名字, 去除lib和.so
+```
+
+在代码中读取文件
+app->src->AndroidManifest.xml添加读取文件的权限
+```xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.zsw.android_opencv">
+
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    ...
+```
+
+在MainActivity.kt onCreate函数中创建App目录, 并拼凑出path, 即可根据path读取文件.
+```ktolin
+var dir = this.getExternalFilesDir("TEMP")?.absolutePath
+File(dir).mkdirs()
+var path = dir + "0.avi" //得到path
+```
+
+将0.avi存放到`Android/data/com.*****`目录下, 这里avi需要以mjpeg编码才能被video capture读取. [用ffmpeg进行转换](https://answers.opencv.org/question/126732/loading-video-files-using-videocapture-in-android/):
+```bash
+ffmpeg -i 0.avi -vcodec mjpeg 0.mjpeg
+ffmpeg -i 0.mjpeg -vocdec mjpeg 00.avi
+```
+
+release版本需要sign, 参考: https://stackoverflow.com/questions/66579530/error-the-apk-for-your-currently-selected-variant-unknown-output-is-not-signe
+
+>File menu > Project Structure->Modules -> Default Config -> Signing Config -> $signingConfigs.debug
 
 ## Profile调试工具&性能工具
 

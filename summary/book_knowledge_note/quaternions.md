@@ -108,7 +108,7 @@ $$
 ## Application
 ### 四元素插值
 <center>
-<img src="../rc/quaternion_inter.JPG" width="200%" height="200%">
+<img src="../../rc/quaternion_inter.JPG" width="200%" height="200%">
 </center>
 
 ### IMU Gyro读数与四元素
