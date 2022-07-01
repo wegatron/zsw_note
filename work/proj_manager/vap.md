@@ -163,8 +163,8 @@ digraph G {
 }
 ```
 
-tq1(metal): bgra 纹理 (1,0,0,1), 采样color.xyzw值是? 蓝色(0,1,0,1)
-tq2(metal): brga frame buffer, 存储 color=(1,0,0,1), 得到的图片颜色是? 红色(1,0,0,1)
+tq1(metal): bgra 纹理 (1,0,0,1), 采样color.xyzw值是? 蓝色(0,0,1,1)
+tq2(metal): rgba frame buffer, 存储 color=(1,0,0,1), 得到的图片颜色是? 红色(1,0,0,1)
 
 所谓的RGBA与BGRA指的应该是`GPU Memory Data`的数据格式. `exec value`与`GPU Memory Data`数据交换时, 会根据颜色格式调整.
 
