@@ -24,6 +24,12 @@ cmake .. "-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64"
 下载container
 `windows` -> `device and simulator` 
 
+## corner stone安装
+首先安装, 然后设置:
+
+```bash
+xattr -cr /path to application app
+```
 
 ## TODO
 
