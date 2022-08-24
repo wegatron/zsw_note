@@ -83,6 +83,24 @@ gcc -arch arm64 -g main.m -lobjc -framework Foundation -framework Cocoa -framewo
 clang -rewrite-objc main.m -o main.cpp
 ```
 
+## Bridge
+
+1. `__bridge`
+    CF和OC对象转化时只涉及对象类型不涉及对象所有权的转化
+
+    ```c++
+    //Image I/O 从 NSBundle 读取图片数据
+    NSString *imagePath = [[NSBundle mainBundle] pathForResource:@"image" ofType:@"png"];
+    CGImageSourceRef source = CGImageSourceCreateWithURL((__bridge CFURLRef)
+    [NSURL fileURLWithPath:[[NSBundle mainBundle] pathForResource:@"image" ofType:@"png"]], NULL);
+    ```
+
+2. `__bridge_transfer`
+    常用在CF对象转化成OC对象时，将CF对象的所有权交给OC对象，此时ARC就能自动管理该内存,作用同CFBridgingRelease()
+
+
+3. `__bridge_retained`
+    与__bridge_transfer 相反，常用在将OC对象转化成CF对象，且OC对象的所有权也交给CF对象来管理，即OC对象转化成CF对象时，涉及到对象类型和对象所有权的转化，作用同CFBridgingRetain()
 
 ## Swift
 
