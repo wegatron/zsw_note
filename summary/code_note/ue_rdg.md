@@ -508,7 +508,6 @@ RDG将render pipeline分为3段:
 
 * execute, 真正执行.
 
-
 ![rdg render pipeline](../../rc/unreal-rdg-time-line.webp)
 
 ## Future Work

@@ -41,3 +41,11 @@ alias emacs='env LC_CTYPE=zh_CN.UTF-8 emacs'
 M-x set-style
 cc-mode
 ```
+
+* 环境变量设置
+init.el
+
+```
+
+```
+

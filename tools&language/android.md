@@ -167,6 +167,41 @@ public class RendererJNI implements GLSurfaceView.Renderer {
 ## Android opengles 应用
 这里以helo-gl2为例[@Android demo项目(包括opengl es)](https://github.com/android/ndk-samples.git)
 
+只绘制一次的问题:
+
+```java
+mGLSurfaceView.setRenderMode(RENDERMODE_CONTINUOUSLY);
+```
+
+
+### OpenGL ES动态加载
+参考[ndk_sample/gles3jni](https://github.com/android/ndk-samples/tree/main/gles3jni)
+* OpenGL ES 2.0 - 此 API 规范受 Android 2.2（API 级别 8）及更高版本的支持.
+* OpenGL ES 3.0 - 此 API 规范受 Android 4.3（API 级别 18）及更高版本的支持.
+* OpenGL ES 3.1 - 此 API 规范受 Android 5.0（API 级别 21）及更高版本的支持.
+* OpenGL ES 3.2 - API 24
+
+可以根据 \_\_ANDROID_API\_\_ 来选择不同的头文件:
+```c++
+#if __ANDROID__
+// OpenGL ES 2.0 api >= 8
+// OpenGL ES 3.0 api >= 18
+// OpenGL ES 3.1 api >= 21
+// OpenGL ES 3.2 api >= 24
+#if __ANDROID_API__ < 18
+#include <kiwi/backend/opengl/gles31_stub.h>
+#else
+inline int gles31Init() { return 0; }
+#if __ANDROID_API__ >= 24
+#include <GLES3/gl32.h>
+#elif __ANDROID_API__ >= 21
+#include <GLES3/gl31.h>
+#else
+#include <GLES3/gl3.h>
+#endif //__ANDROID_API__ >= 21
+#endif // __ANDROID_API__ < 18
+```
+
 ## Android opencv
 参考项目:[android-opencv](https://cloud.tencent.com/developer/article/1723892)
 这里构建ktolinproject
@@ -225,6 +260,10 @@ app->src->AndroidManifest.xml添加读取文件的权限
 var dir = this.getExternalFilesDir("TEMP")?.absolutePath
 File(dir).mkdirs()
 var path = dir + "0.avi" //得到path
+```
+
+```java
+String dir = this.getExternalFilesDir("TEMP").getAbsolutePath();
 ```
 
 将0.avi存放到`Android/data/com.*****`目录下, 这里avi需要以mjpeg编码才能被video capture读取. [用ffmpeg进行转换](https://answers.opencv.org/question/126732/loading-video-files-using-videocapture-in-android/):

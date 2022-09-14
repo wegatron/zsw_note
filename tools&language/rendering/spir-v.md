@@ -29,8 +29,20 @@ glslangValidator -V -o texture_shader_frag.spv shader_texture.frag
 # 将spir-v转译成glsl的不同版本, --es, --no-es表示GLSL or GLSL ES.
 spirv-cross --version 310 --es texture_shader_vert.spv --output parse.vert
 
+#支持fragment buffer fetch
+spirv-cross --version 310 --es \
+--glsl-remap-ext-framebuffer-fetch 0 0 \
+--glsl-remap-ext-framebuffer-fetch 1 1 \
+--glsl-remap-ext-framebuffer-fetch 2 2 \
+--glsl-remap-ext-framebuffer-fetch 3 3 \
+texture_shader_vert.spv --output parse.vert
+
 # 将spir-v转译成msl
-spirv-cross --msl --msl-version 2.1 ../samples/data/shaders/texture_quad.spv --output ../samples/data/shaders/texture_quad.msl
+spirv-cross --msl --msl-version 2.1 \
+../samples/data/shaders/texture_quad.spv --output ../samples/data/shaders/texture_quad.msl
+
+# 支持fragment buffer fetch
+spirv-cross --msl --msl-ios --msl-version 2.1  --msl-framebuffer-fetch ff.spirv --output ff.msl
 ```
 
 ### SPIRV-Cross
@@ -43,6 +55,10 @@ spirv-cross --msl --msl-version 2.1 ../samples/data/shaders/texture_quad.spv --o
 >The SPIR-V Tools project provides an API and commands for processing SPIR-V modules.
 
 *CLI和代码API形式使用*
+
+```bash
+spirv-dis initialize.spv
+```
 
 ### Shaderc
 封装了glslangValidator和SPIRV-Tools, 提供类似GCC和Clang的使用方式, 更好的与构建系统相结合(如CMake).

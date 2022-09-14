@@ -15,3 +15,6 @@ NisHFBTcWJS0sC5BTFwrtfLEE9lEwz2bxHQpWJiu12ZeKpi+7oUSqebX+
 
 
 reg delete "HKCU\Software\Scooter Software\Beyond Compare 4" /v CacheID /f
+
+2.1 在搜索栏中输入 regedit   ，打开注册表
+2.2 删除项目：计算机\HKEY_CURRENT_USER\Software\Scooter Software\Beyond Compare 4\CacheId

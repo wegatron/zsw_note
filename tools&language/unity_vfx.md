@@ -27,11 +27,14 @@
     >No build is necessary to observe the issue.
     >The issue is in: VFXCommon.hlsl line: 136
 
-    修改完成后, 重新创建项目, VFX可以正常显示.
+    通过unity-hub定位unity安装位置. 修改完成后, 从新将vfx拖入Hierarchy, VFX可以正常显示.
     ![unity_create_vfx_suc](rc/unity_create_vfx_suc.png)
 
 5. 双击VFX Assets, `visual effect graph`窗口, 可供设计粒子效果.
     ![unity_vfx_system](rc/unity_vfx_system.png)
+
+另外, 在VFX Inspector 中可以看到VFX的shader代码:
+![](rc/unity_vfx_inspector.png)
 
 ## VFX的设计
 整个系统可分为横向和纵向两种逻辑:
@@ -104,13 +107,34 @@ github地址: https://github.com/keijiro/Smrvfx
 
 __总结__:
 
-### Simple-vfx
+### Simple Spawn System
+Unity内置`simple spawn system`.
+![](rc/simple-spawn-unity.png)
+
+在球形表面发射粒子(arc定义了经度范围):
+![](rc/unity_vfx_simple_spawn_init.png)
+
+利用噪声, 来模拟粒子的运动. 参考[Unity VFX Turbulence](https://docs.unity3d.com/Packages/com.unity.visualeffectgraph@10.2/manual/Block-Turbulence.html)
+
+![](rc/unity_vfx_simple_spawn_update.png)
+
+|Input | Type | Description |
+| ---- | ----- | ------ |
+|Field Transform | Transform | The transform with which to position, rotate, or scale the turbulence field. |
+|Intensity | Float | The intensity of the turbulence. Higher values result in an increased particle velocity. |
+|Drag | Float | The drag coefficient. Higher drag leads to a stronger force influence over the particle velocity. This property only appears if you set Mode to Relative. |
+|Frequency | Float | The period in which Unity samples the noise. A higher frequency results in more frequent noise change. |
+|Octaves | Uint (Slider) | The number of layers of noise. More octaves create a more varied look but are also more resource-intensive to calculate. |
+|Roughness | Float (Slider) | The scaling factor Unity applies to each octave. Unity only uses roughness when Octaves is set to a value higher than 1. |
+|Lacunarity | Float | The rate of change of the frequency for each successive octave. A lacunarity value of 1 results in each octave having the same frequency. |
+
 
 ### Genine
 
 关键词: 烟雾模拟
 
 ![smoke](rc/unity_vfx_smoke.png)
+
 
 紫色条形烟雾:
 * 发射
@@ -153,7 +177,16 @@ __总结__:
 
 精灵形态粒子:
 
+## 导出Android 应用
 
+导出时出现错误
+```
+Win32Exception: ApplicationName='/home/wegatron/opt/unity/2021.3.7f1/Editor/Data/PlaybackEngines/AndroidPlayer/SDK/platform-tools/adb', CommandLine='devices', CurrentDirectory='/home/wegatron/opt/unity/2021.3.7f1/Editor/Data/PlaybackEngines/AndroidPlayer/SDK', Native error= Access denied
+System.Diagnostics.Process.StartWithCreateProcess (System.Diagnostics.ProcessStartInfo startInfo) (at <d8e00e677f3d432e821feedd89e61106>:0)
+System.Diagnostics.Process.Start () (at <d8e00e677f3d432e821feedd89e61106>:0)
+(wrapper remoting-invoke-with-check) System.Diagnostics.Process.Start()
+```
+由于权限没有给到, 需要给与可执行权限.
 
 ## Reference
 最基础的simple vfx解析(球体表面+perl ling noise field控制粒子速度, 根据粒子速度得到朝向和颜色): https://www.youtube.com/watch?v=FvZNVQuLDjI

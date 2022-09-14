@@ -11,6 +11,7 @@
 
 ### 基本流程
 1. 创建Vulkan Instance.
+    Instance extension包括:
 2. 创建 Surface.
     Vulkan无法与window system直接交互, 需要使用WSI(Window System Integration) extension. 这里, 可以直接使用第三方库的封装, 如`glfwCreateWindowSurface`.
 

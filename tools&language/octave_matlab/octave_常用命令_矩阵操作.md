@@ -515,6 +515,22 @@ a =
 imwrite(rgb, 'xxx.png', 'png', 'Alpha', alpha);
 ```
 
+读取视频
+```matlab
+r = VideoReader("xxx.mp4")
+im = [];
+while (r.hasFrame())
+   img = readFrame (r);
+   if (isempty (im))
+     im = image (img);
+     axis off;
+   else
+     set (im, "cdata", img);
+   endif
+   drawnow
+endwhile
+```
+
 ## 拟合
 定义函数:
 ```matlab
