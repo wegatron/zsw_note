@@ -1,5 +1,25 @@
 ## filament 源码分析
 
+### 编译
+编译前需要安装 libc++, libc++abi
+
+```
+CC=/usr/bin/clang CXX=/usr/bin/clang++ ./build.sh -p android release
+
+cmake ../../ -DCMAKE_TOOLCHAIN_FILE=/home/wegatron/opt/android_sdk/ndk/21.4.7075529/build/cmake/android.toolchain.cmake -DANDROID_PLATFORM=android-30 -DANDROID_NDK=/home/wegatron/opt/android_sdk/ndk/21.4.7075529 -DCMAKE_BUILD_TYPE=Release -DANDROID_ABI="arm64-v8a" -DCMAKE_INSTALL_PREFIX="/home/wegatron/win-data/usr/android"
+```
+
+修改`filament/backend/CMakeLists.txt`
+
+```cmake
+if (EGL OR ANDROID)
+        list(APPEND SRCS src/opengl/platforms/PlatformEGL.cpp)
+endif()
+```
+
+## filament android使用
+demo: https://github.com/k-konovalov/Android-Filament-C-Example/blob/main/app_filament_980/src/main/cpp/hello_filament.cpp
+
 ### filament overview
 
 filament整体架构:

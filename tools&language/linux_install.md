@@ -64,6 +64,17 @@ uname -r
 
 再在包管理器中搜索`linux-image`, `linux-headers`查找相应的没有用的kernel(按照安装状态排序), 删除无用的kernel.
 
+自动清理, 参考: https://softhints.com/linux-mint-volume-boot-disk-space-remaining/
+```bash
+df -h /boot # 查看boot的使用情况
+
+sudo du -sh /boot/* # 查看boot下文件列表以及其所占用的空间大小
+
+sudo apt-get autoclean && sudo apt-get autoremove # 自动清理不需要的软件包
+# apt-get autoclean 清理过时的dep-packages
+# apt-get autoremove 清理独立的package, 不被其他地方引用到的package
+```
+
 
 ## Reference
 [linux 安装教程](https://linuxmint-installation-guide.readthedocs.io/zh_CN/latest/burn.html)

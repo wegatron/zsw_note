@@ -7,6 +7,7 @@ Anaconda则是一个打包的集合，里面预装好了conda、某个版本的p
 
 ## 基本命令
 注意这里为了与ros共存, 将.bashrc中的conda初始化注释掉了, 因此使用conda之前打开.bashrc中的注释
+
 ```bash
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
