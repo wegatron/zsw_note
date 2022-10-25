@@ -57,5 +57,8 @@ frame buffer
     * render area是framebuffer中会被影响(值会被改变的区域, 需要应用程序确保不会超过render area), 可以供底层进行优化, 比如有些tiles可以不被包含.
 
 
+    这里录制命令的时候, framebuffer-draw_cmd_buffer
+
 * prepare_frame()
-    
+
+* submit_frame()
