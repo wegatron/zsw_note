@@ -1,15 +1,28 @@
 # vulkan samples note
 ##  Texture Loading
-### Common Prepare
+### Common
 ...
 
 swapchain
 frame buffer
 
+* prepare()
+    * 创建swapchain以及其中的vkimage.
+    * 创建semaphores.acquired_image_ready, 等待swapchain中获取下一个index的vkimage
+    * 创建semaphores.render_complete, 等待渲染完成, 以进行present
+
+* prepare_frame()
+    从swapchain中获取下一个index的vkimage
+
+* submit_frame()
+
+
 ### Load Texture
 
 * load_texture()
-    加载ktx纹理(支持不同种类的纹理结构2D texture, cube map array等. 以及不同种类的纹理压缩方式.), 但例子中没有用到压缩.
+    加载ktx纹理(支持不同种类的纹理结构2D texture, cube map array等. 以及不同种类的纹理压缩方式.), 但例子中没有用到压缩. 
+
+    这里提到: __通常情况下图片保存的是SRGB__
 
     创建Image分为两种: GPU only(需要使用staging buffer进行拷贝, 可以将mipmap数据同时拷贝到vkimage中), 或是VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 可以直接拷贝. 这里使用的都是optimal_tiling, 也是直接拷贝原始图片数据(没有进行对齐之类的操作).
 
@@ -59,6 +72,10 @@ frame buffer
 
     这里录制命令的时候, framebuffer-draw_cmd_buffer
 
-* prepare_frame()
+* 其他
+    shader中使用了`texture(sampler, uv, lod_bais)`, 用到了lod计算. ui也可以借鉴.
 
-* submit_frame()
+## texture mipmap gen
+通过线性滤波的方式, 从上一层拷贝到下一层. `vkCmdBlitImage`.
+
+## subpasses
