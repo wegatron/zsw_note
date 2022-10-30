@@ -64,7 +64,8 @@ vim .git/config
 git clone --recursive [URL to Git repo]
 git submodule update --init
 # if there are nested submodules, -j means parallel download
-git submodule update --init --recursive -j 8
+#git submodule update --init --recursive -j 8
+git submodule update --remote
 ```
 
 4. submodule 更新到最新版本
