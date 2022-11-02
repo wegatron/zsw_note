@@ -70,11 +70,22 @@ git submodule update --remote
 
 4. submodule 更新到最新版本
 ```bash
-git pull
-git submodule update
+git pull --recurse-submodules
+git submodule update --remote --merge # 更新到与remote相同的版本
 ```
 
 reference: https://git-scm.com/docs/git-submodule
+
+## git lfs
+```bash
+git lfs install # git lfs 初始化
+
+git lfs track *.svg # 选择要用lfs追踪的文件
+
+git lfs ls-files # 查看被lfs跟踪的文件
+
+git lfs untrack 1.png # 取消lfs跟踪的文件
+```
 
 
 ## svn git 一起工作方法

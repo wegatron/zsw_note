@@ -79,3 +79,15 @@ frame buffer
 通过线性滤波的方式, 从上一层拷贝到下一层. `vkCmdBlitImage`.
 
 ## subpasses
+
+### gltf文件
+参考: https://docs.fileformat.com/3d/gltf/
+gltf可以是一个json文件加上其引用的一些文件. subpasses加载的gltf:
+
+```bash
+sponza01.gltf # 总的json文件
+*.ktx # 纹理image数据
+Sponza01.bin # buffer, 主要来存储mesh数据
+```
+
+gltf文件中定义了一个node列表, node可以是mesh、camera. 通过index引用node组建一个或多个scene.
