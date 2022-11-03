@@ -90,4 +90,52 @@ sponza01.gltf # 总的json文件
 Sponza01.bin # buffer, 主要来存储mesh数据
 ```
 
-gltf文件中定义了一个node列表, node可以是mesh、camera. 通过index引用node组建一个或多个scene.
+gltf文件中定义material, images, buffer, mesh等数据, 引用这些数据定义了node(mesh、camera...). scene是node构成的一颗树型结构.
+
+```
+tiny_gltf_model
+├── accessors
+├── animations
+├── buffers
+├── bufferViews
+├── materials # 引用images
+├── meshes
+│   ├── mesh[0]
+│   │    ├── primitives[0] # 这里会引用material
+│   │    ├── primitives[1]
+│   ├── mesh[1]
+├── nodes # 引用mesh、camera、light
+├── textures
+├── images
+├── skins
+├── samplers
+├── cameras
+├── scenes # 引用node
+├── lights
+├── ...
+```
+
+### 渲染流程
+
+通过prepare加载gltf模型, 并构建场景scene:
+
+```c++
+Subpasses::prepare(vkb::Platform &platform)
+{
+    load_scene("scenes/sponza/Sponza01.gltf"); // 加载gltf 构建scene
+
+    // render pass 在构建时传入scene
+	render_pipeline = create_one_renderpass_two_subpasses(); // subpass 的方式绘制
+
+	geometry_render_pipeline = create_geometry_renderpass(); // multipass 的方式绘制
+	lighting_render_pipeline = create_lighting_renderpass();    
+}
+```
+
+
+遍历获取所有需要绘制的submesh进行绘制, 函数如下:
+
+```c++
+Subpasses::draw_subpasses // subpass的方式
+Subpasses::draw_renderpasses // multiple render pass的方式
+```

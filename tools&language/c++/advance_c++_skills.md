@@ -319,5 +319,11 @@ HeapAllocator& operator=(HeapAllocator&& rhs) noexcept = default;
 
   可以配合`std::monostate`来使用, `std::monostate`表示空(variant的index为无效的0).
 
+## 多线程
+* std::async
+    在实现时仍然会创建新的线程, 参考:https://ddanilov.me/std-async-implementations/, 线程创建耗时或许是0.5ms
+* [CTPL](https://github.com/vit-vit/CTPL)
+    线程常驻, 用于接收任务
+
 ## c++ 编程规范
 [华为方舟编译规范](https://www.bookstack.cn/read/openarkcompiler/d2d6358058bab8c5.md)
