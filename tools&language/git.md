@@ -65,7 +65,8 @@ git clone --recursive [URL to Git repo]
 git submodule update --init
 # if there are nested submodules, -j means parallel download
 #git submodule update --init --recursive -j 8
-git submodule update --remote
+git submodule update --remote # 更新到与submodule设定的url最新的commit
+git submodule update checkout # checkout与父项目相同的commit
 ```
 
 4. submodule 更新到最新版本

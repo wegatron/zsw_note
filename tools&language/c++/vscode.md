@@ -38,4 +38,13 @@ gitlen, gitkaren的插件
     与cmake-gui的用法一样, 在configure完成之后, 通过命令 `cmake: Edit CMake Cache` 对cmake参数进行修改.
 
 4. 调试环境配置
-    
+
+## 搜索消失
+
+若搜索栏与`explore`显示在一起, 进入`Explore`, 在搜索区域上右键, `reset search...`.
+
+其他, 在左侧`activity`栏中右键, `search`上打钩.
+
+## 文件过滤(不显示)
+
+`file` -> `settings` -> `files exclude`
