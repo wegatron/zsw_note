@@ -1,4 +1,47 @@
 # vulkan samples note
+
+## vulkan sample 的启动/运行流程
+
+```c++
+// 1. 初始化时, 将argument传入
+vkb::UnixPlatform platform{vkb::UnixType::Linux, argc, argv};
+
+
+// 2. 通过插件start sample, 设置需要启动的application
+// start_sample.cpp
+void StartSample::init(const vkb::CommandParser &parser)
+{
+	if (parser.contains(&sample_cmd))
+	{
+		// Launch Sample
+		auto *sample = apps::get_sample(parser.as<std::string>(&sample_cmd));
+		if (sample != nullptr)
+		{
+			vkb::Window::OptionalProperties properties;
+			std::string                     title = "Vulkan Samples: " + sample->name;
+			properties.title                      = title;
+			platform->set_window_properties(properties);
+			platform->request_application(sample);
+		}
+	}
+    ...
+}
+
+// 3. 在appication确定之后, platform main_loop 在第一次调用时, 将调用 platform::start_app
+// 在其中将调用 active_app->prepare(*this)
+bool Application::prepare(Platform &_platform)
+{
+    ...
+}
+
+// 4. 渲染一帧, 在platform main_loop中, 会调用platform::update, 由其计算间隔时间delta_time
+// 而后调用active_app->update(delta_time) 渲染一帧
+void Application::update(float delta_time)
+{
+    ...
+}
+```
+
 ##  Texture Loading
 ### Common
 ...
@@ -116,8 +159,7 @@ tiny_gltf_model
 ```
 
 ### 渲染流程
-
-通过prepare加载gltf模型, 并构建场景scene:
+1. prepare加载gltf模型, 并构建场景scene:
 
 ```c++
 Subpasses::prepare(vkb::Platform &platform)
@@ -133,9 +175,53 @@ Subpasses::prepare(vkb::Platform &platform)
 ```
 
 
-遍历获取所有需要绘制的submesh进行绘制, 函数如下:
+2. 遍历获取所有需要绘制的submesh进行绘制, 函数如下:
 
 ```c++
 Subpasses::draw_subpasses // subpass的方式
 Subpasses::draw_renderpasses // multiple render pass的方式
+```
+
+## vkb framework
+使用vma创建buffer/image, 调用堆栈:
+```c++
+// 这里没有额外使用VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 使用手动刷新
+// 在此处进行memory种类的选择:
+// VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+// VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT >>> cpu写,gpu 读取
+// VK_MEMORY_DEVICE_LOCAL | VK_MEMORY_PROPERTY_HOST_CACHED_BIT >>> gpu写,cpu读
+// https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/blob/73d13a83ede142fa030d84e603a313831fcc424a/include/vk_mem_alloc.h#L3656
+vmaFindMemoryTypeIndex(
+    VmaAllocator allocator,
+    uint32_t memoryTypeBits,
+    const VmaAllocationCreateInfo* pAllocationCreateInfo,
+    uint32_t* pMemoryTypeIndex)
+
+VmaAllocator_T::AllocateMemory(
+    const VkMemoryRequirements& vkMemReq,
+    bool requiresDedicatedAllocation,
+    bool prefersDedicatedAllocation,
+    VkBuffer dedicatedBuffer,
+    VkBufferUsageFlags dedicatedBufferUsage,
+    VkImage dedicatedImage,
+    const VmaAllocationCreateInfo& createInfo,
+    VmaSuballocationType suballocType,
+    size_t allocationCount,
+    VmaAllocation* pAllocations)
+
+vmaCreateBuffer(
+    VmaAllocator allocator,
+    const VkBufferCreateInfo* pBufferCreateInfo,
+    const VmaAllocationCreateInfo* pAllocationCreateInfo,
+    VkBuffer* pBuffer,
+    VmaAllocation* pAllocation,
+    VmaAllocationInfo* pAllocationInfo)
+
+vkb::core::Buffer::Buffer(
+	Device const &device,
+	VkDeviceSize size,
+	VkBufferUsageFlags buffer_usage,
+	VmaMemoryUsage memory_usage,
+	VmaAllocationCreateFlags flags,
+	const std::vector<uint32_t> &queue_family_indices)
 ```
