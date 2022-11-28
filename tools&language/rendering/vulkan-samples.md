@@ -185,7 +185,9 @@ Subpasses::draw_renderpasses // multiple render pass的方式
 ## vkb framework
 使用vma创建buffer/image, 调用堆栈:
 ```c++
-// 这里没有额外使用VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 使用手动刷新
+// 这里没有额外使用VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 使用手动刷新.
+// 现在对于没有cache的内存, 默认时coherent的
+// Host memory accesses to uncached memory are slower than to cached memory, however uncached memory is always host coherent.
 // 在此处进行memory种类的选择:
 // VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 // VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT >>> cpu写,gpu 读取
