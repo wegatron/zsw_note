@@ -167,9 +167,11 @@ Subpasses::prepare(vkb::Platform &platform)
     load_scene("scenes/sponza/Sponza01.gltf"); // 加载gltf 构建scene
 
     // render pass 在构建时传入scene
-	render_pipeline = create_one_renderpass_two_subpasses(); // subpass 的方式绘制
+    // subpass 的方式绘制
+	render_pipeline = create_one_renderpass_two_subpasses();
 
-	geometry_render_pipeline = create_geometry_renderpass(); // multipass 的方式绘制
+    // multipass 的方式绘制
+	geometry_render_pipeline = create_geometry_renderpass();
 	lighting_render_pipeline = create_lighting_renderpass();    
 }
 ```
@@ -182,48 +184,71 @@ Subpasses::draw_subpasses // subpass的方式
 Subpasses::draw_renderpasses // multiple render pass的方式
 ```
 
+3. vkb::GeometrySubpass
+
+
+4. vkb::LightingSubpass
+
+
+5. vkb::RenderPipeline
+
 ## vkb framework
-使用vma创建buffer/image, 调用堆栈:
-```c++
-// 这里没有额外使用VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 使用手动刷新.
-// 现在对于没有cache的内存, 默认时coherent的
-// Host memory accesses to uncached memory are slower than to cached memory, however uncached memory is always host coherent.
-// 在此处进行memory种类的选择:
-// VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
-// VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT >>> cpu写,gpu 读取
-// VK_MEMORY_DEVICE_LOCAL | VK_MEMORY_PROPERTY_HOST_CACHED_BIT >>> gpu写,cpu读
-// https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/blob/73d13a83ede142fa030d84e603a313831fcc424a/include/vk_mem_alloc.h#L3656
-vmaFindMemoryTypeIndex(
-    VmaAllocator allocator,
-    uint32_t memoryTypeBits,
-    const VmaAllocationCreateInfo* pAllocationCreateInfo,
-    uint32_t* pMemoryTypeIndex)
 
-VmaAllocator_T::AllocateMemory(
-    const VkMemoryRequirements& vkMemReq,
-    bool requiresDedicatedAllocation,
-    bool prefersDedicatedAllocation,
-    VkBuffer dedicatedBuffer,
-    VkBufferUsageFlags dedicatedBufferUsage,
-    VkImage dedicatedImage,
-    const VmaAllocationCreateInfo& createInfo,
-    VmaSuballocationType suballocType,
-    size_t allocationCount,
-    VmaAllocation* pAllocations)
+1. 使用vma创建buffer/image, 调用堆栈.
 
-vmaCreateBuffer(
-    VmaAllocator allocator,
-    const VkBufferCreateInfo* pBufferCreateInfo,
-    const VmaAllocationCreateInfo* pAllocationCreateInfo,
-    VkBuffer* pBuffer,
-    VmaAllocation* pAllocation,
-    VmaAllocationInfo* pAllocationInfo)
+    ```c++
+    // 这里没有额外使用VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 使用手动刷新.
+    // 现在对于没有cache的内存, 默认时coherent的
+    // Host memory accesses to uncached memory are slower than to 
+    // cached memory, however uncached memory is always host coherent.
+    
+    // 在此处进行memory种类的选择:
+    // VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
+    // VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT >>> cpu写,gpu 读取
+    // VK_MEMORY_DEVICE_LOCAL | VK_MEMORY_PROPERTY_HOST_CACHED_BIT >>> gpu写,cpu读
+    // https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator/blob/\
+    // 73d13a83ede142fa030d84e603a313831fcc424a/include/vk_mem_alloc.h#L3656
+    vmaFindMemoryTypeIndex(
+        VmaAllocator allocator,
+        uint32_t memoryTypeBits,
+        const VmaAllocationCreateInfo* pAllocationCreateInfo,
+        uint32_t* pMemoryTypeIndex)
 
-vkb::core::Buffer::Buffer(
-	Device const &device,
-	VkDeviceSize size,
-	VkBufferUsageFlags buffer_usage,
-	VmaMemoryUsage memory_usage,
-	VmaAllocationCreateFlags flags,
-	const std::vector<uint32_t> &queue_family_indices)
-```
+    VmaAllocator_T::AllocateMemory(
+        const VkMemoryRequirements& vkMemReq,
+        bool requiresDedicatedAllocation,
+        bool prefersDedicatedAllocation,
+        VkBuffer dedicatedBuffer,
+        VkBufferUsageFlags dedicatedBufferUsage,
+        VkImage dedicatedImage,
+        const VmaAllocationCreateInfo& createInfo,
+        VmaSuballocationType suballocType,
+        size_t allocationCount,
+        VmaAllocation* pAllocations)
+
+    vmaCreateBuffer(
+        VmaAllocator allocator,
+        const VkBufferCreateInfo* pBufferCreateInfo,
+        const VmaAllocationCreateInfo* pAllocationCreateInfo,
+        VkBuffer* pBuffer,
+        VmaAllocation* pAllocation,
+        VmaAllocationInfo* pAllocationInfo)
+
+    vkb::core::Buffer::Buffer(
+    	Device const &device,
+    	VkDeviceSize size,
+    	VkBufferUsageFlags buffer_usage,
+    	VmaMemoryUsage memory_usage,
+    	VmaAllocationCreateFlags flags,
+    	const std::vector<uint32_t> &queue_family_indices)
+    ```
+
+2. sg::image, 加载纹理.
+
+    ```c++
+    image = std::make_unique<sg::Image>(
+        gltf_image.name,
+        std::move(gltf_image.image),
+        std::move(mipmaps));
+    image->create_vk_image(device);
+    ```
