@@ -18,3 +18,6 @@ ssh-add
 export LANG=zh_CN.UTF-8
 export LANGUAGE=zh_CN:en_US
 ```
+
+## sougou
+`CTRL` + `;` 默认为选择粘贴历史. 可以通过系统的 `Fcitx Configuration`-> `Add on` -> `clipboard fcitx access`进行去除

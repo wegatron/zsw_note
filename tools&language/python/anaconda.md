@@ -41,11 +41,17 @@ conda activate [env_name]
 创建环境
 ```bash
 conda create -n [env_name] python=3.6
+
+# 根据env.yml创建环境
+conda env create -f env.yml
+
+# 安装env.yml中的包, --prune uninstalls dependencies which were removed from env.yml
+conda env update --file env.yml --prune
 ```
 
 删除环境
 ```bash
-conda remove 
+conda env remove -n [ENV_NAME]
 ```
 
 list包

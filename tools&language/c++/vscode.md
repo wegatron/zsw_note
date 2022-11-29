@@ -9,7 +9,8 @@ gitlen, gitkaren的插件
     {
         // Use IntelliSense to learn about possible attributes.
         // Hover to view descriptions of existing attributes.
-        // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+        // For more information, visit: 
+        // https://go.microsoft.com/fwlink/?linkid=830387
         "version": "0.2.0",
         "configurations": [
             {
@@ -38,6 +39,51 @@ gitlen, gitkaren的插件
     与cmake-gui的用法一样, 在configure完成之后, 通过命令 `cmake: Edit CMake Cache` 对cmake参数进行修改.
 
 4. 调试环境配置
+    configure完成之后, 在下方`task bar`上进行编译. 
+    * 对于没有输入参数以及环境变量设置的程序, 可以直接点击`task bar`上的调试按钮进行调试. 
+    * 通过右边的工具栏, 打开调试工具栏目, 点击右上方齿轮按钮, 进行调试环境json设置.
+        ```json
+        {
+        // Use IntelliSense to learn about possible attributes.
+        // Hover to view descriptions of existing attributes.
+        // For more information, visit: 
+        // https://go.microsoft.com/fwlink/?linkid=830387
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "name": "(gdb) Launch",
+                "type": "cppdbg",
+                "request": "launch",
+                // Resolved by CMake Tools:
+                "program": "${command:cmake.launchTargetPath}",
+                "args": [],
+                "stopAtEntry": false,
+                "cwd": "${workspaceFolder}",
+                "environment": [
+                    {
+                        // add the directory where our target 
+                        // was built to the PATHs
+                        // it gets resolved by CMake Tools:
+                        "name": "PATH",
+                        "value": "$PATH:${command:cmake.launchTargetDirectory}"
+                    },
+                    {
+                        "name": "OTHER_VALUE",
+                        "value": "Something something"
+                    }
+                ],
+                "externalConsole": true,
+                "MIMode": "gdb",
+                "setupCommands": [
+                    {
+                        "description": "Enable pretty-printing for gdb",
+                        "text": "-enable-pretty-printing",
+                        "ignoreFailures": true
+                    }
+                ]
+            }
+        }        
+        ```
 
 ## 搜索消失
 
