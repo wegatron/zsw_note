@@ -21,6 +21,12 @@ MyApp/
 ```
 
 ### build.gradle文件详解
+
+settings.gradle
+```json
+rootProject.name = "android_opengles" # 这里必须和很目录名称一致
+```
+
 [@Configure your build](https://developer.android.com/studio/build#module-level)
 项目的build.gradle文件:
 ```json
