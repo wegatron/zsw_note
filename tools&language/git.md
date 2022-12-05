@@ -1,3 +1,11 @@
+## git 分支操作
+```bash
+git branch --remote # 显示所有远程分支
+git switch -c [local_branch_name] origin/test # 切换出远程分支
+git checkout [local_branch_name]
+git branch -d [local_branch_name]
+git push origin --delete [remote_branch_name]
+```
 ## git remote
 远程处理
 ```bash
