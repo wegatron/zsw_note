@@ -26,3 +26,16 @@ find . -type f -size +100M
 gdown https://drive.google.com/uc?id=标识符
 ```
 
+
+对于大文件可能会出错, 使用如下方式下载:
+```python
+gdown.download(
+    "https://drive.google.com/uc?export=download&confirm=pbef&id=1ghvzYXdmiCuX5I757id73jWuRLMCzXAX",
+    "ckpt/00000189-checkpoint.pth.tar"
+)
+```
+
+对于带有`confirm=t`的文件, 可以使用(curl支持断点续传):
+```bash
+curl -L -o data/my-file.h5 'https://drive.google.com/uc?id=my-file-id-here&confirm=t
+```
