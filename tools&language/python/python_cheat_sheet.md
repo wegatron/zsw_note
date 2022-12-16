@@ -23,6 +23,10 @@ a.squeeze()
 tensor to numpy array
 ```
 a = np.asarray(a.cpu())
+
+import matplotlib.pyplot as plt
+plt.plot(a)
+plt.show()
 ```
 
 tensor to image
