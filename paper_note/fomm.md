@@ -49,4 +49,40 @@
 ### Generation
 通过SameBlock + 2xDownBlock2d, 将1x3x256x256的原图转变为1x256x64x64的feature map. 利用上一步的结果对feature map进行deform, 再乘以occlusion_map, 将被遮挡的feature除去. 在通过bottleneck + up_blockx6 + 7x7 conv 3 /3 得到最终输出.
 
+
 ### Training
+
+* reconstruction loss
+    输出结果构建图像金字塔, 在多个分辨率下, 利用vgg-19提取feature, 计算driving frame $D$ 与 reconstructed frame $\hat{D}$之间的loss:
+
+    $$
+    L_{rec}(\hat{D}, D) = \sum_{i=1}^I |N_i(\hat{D}) - N_i(D)|
+    $$
+
+    ```python
+    for scale in self.scales:
+        x_vgg = self.vgg(pyramide_generated['prediction_' + str(scale)])
+        y_vgg = self.vgg(pyramide_real['prediction_' + str(scale)])
+
+        for i, weight in enumerate(self.loss_weights['perceptual']):
+            value = torch.abs(x_vgg[i] - y_vgg[i].detach()).mean()
+            value_total += self.loss_weights['perceptual'][i] * value
+        loss_values['perceptual'] = value_total
+    ```
+
+* GAN loss
+    这里GAN与普通的loss好像有点不一样, 对输出结果的图像金字塔进行判别, loss:
+
+    $$
+        L = (1-D(x))^2
+    $$
+
+    ```python
+    for scale in self.disc_scales:
+        key = 'prediction_map_%s' % scale
+        # discriminator_maps_generated 判别器对结果的判别
+        value = ((1 - discriminator_maps_generated[key]) ** 2).mean()
+        value_total += self.loss_weights['generator_gan'] * value
+    ```
+
+* keypoint equivariance loss
