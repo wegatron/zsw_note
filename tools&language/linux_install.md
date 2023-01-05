@@ -1,6 +1,10 @@
 # Linux安装踩坑
 自以为安装个系统再简单不过了, 制作完启动盘, 分好区, 一路next半小时就完了. 没想到这次折腾了一天, 触及到了很多认知的盲点, 这里做一些小记.
 
+
+## ios 刻录
+建议使用: https://www.balena.io/etcher/ 开源+带刻录校验+支持多种操作系统
+
 ## 准备工作&新的认知
 * Linux版本选择
     无脑选ubuntu, 支持最好(源最全)的一个系统. 但ubuntu的UI实在太丑, 用起来也不方便. 很久之前接触了mint(ubuntu的改良版本, cinnamon桌面), 这个UI好用很多, 且完全支持ubuntu的源.
@@ -54,6 +58,31 @@
 
 [Fix Windows 10 Or 8 Partition Mounted As Read-Only On Linux When Dual Booting](https://www.linuxuprising.com/2019/01/fix-windows-10-or-8-partition-mounted.html)
 
+## 基本软件安装
+
+```bash
+sudo apt install -y cmake synaptic git emacs openssh-server filezilla fcitx foxit-reader
+sudo dpkg -i google-chrome-stable_current_amd64.deb wps-office_11.1.0.9505_amd64.deb 
+tar -jxvf Zotero-5.0.85_linux-x86_64.tar.bz2 -C ~/opt/
+tar -zxvf pycharm-community-2020.1.tar.gz  -C ~/opt/
+chmod 400 id_rsa
+cp id_rsa ~/.ssh
+ssh-add
+```
+
+* deepwine 安装
+    参考 https://github.com/zq1997/deepin-wine
+    中文乱码问题: 安装fonts-wqy-microhei完美解决
+
+    对于英文系统, 在启动脚本中增加
+    ```
+    export LANG=zh_CN.UTF-8
+    export LANGUAGE=zh_CN:en_US
+    ```
+
+* sougou
+    `CTRL` + `;` 默认为选择粘贴历史. 可以通过系统的 `Fcitx Configuration`-> `Add on` -> `clipboard fcitx access`进行去除
+
 
 ## linux 删除多余的kernel
 
@@ -74,7 +103,6 @@ sudo apt-get autoclean && sudo apt-get autoremove # 自动清理不需要的软�
 # apt-get autoclean 清理过时的dep-packages
 # apt-get autoremove 清理独立的package, 不被其他地方引用到的package
 ```
-
 
 ## Reference
 [linux 安装教程](https://linuxmint-installation-guide.readthedocs.io/zh_CN/latest/burn.html)
