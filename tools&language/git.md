@@ -6,6 +6,20 @@ git checkout [local_branch_name]
 git branch -d [local_branch_name]
 git push origin --delete [remote_branch_name]
 ```
+
+## git 合并
+
+```bash
+# [A, B] 包含A
+git cherry-pick A^..B
+
+# (A, B] 不包含A
+git cherry-pick A..B
+
+# A和B
+git cherry-pick A B
+```
+
 ## git remote
 远程处理
 ```bash

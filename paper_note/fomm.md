@@ -86,3 +86,65 @@
     ```
 
 * keypoint equivariance loss
+    图片旋转或形变后, 检测到的key point位置不变.
+
+# face-vid2vid
+
+## 特征提取和特征点驱动
+针对人头进行了适配, 将人头信息进行了拆分: 
+1. apparance feature volumn
+    特征tensor
+
+2. geometry feature
+    K=20个3D特征点进行表示, 3D特征点与人头姿态和表情无关(标准姿态下的人脸特征点). 
+
+3. head pose + expression
+    人头的RT, 以及(第k个)特征点自然姿态下的deformation $\delta_{s,k}$. $s$表示source.
+
+从而有:
+
+$$
+x_{s,k} = T(x_{c,k}, R_s, t_s, \delta_{s,k}) \equiv R_s x_{c,k} + t_s + \delta_{s,k}
+$$
+
+这里, $x_{c,k}$ canonical keypoints是检测得到的姿态、表情无关的特征点位置. $x_{s,k}$是加入姿态表情之后的特征点位置.
+
+
+对于原图提取所有信息, 而对于驱动视频, 只提取Head pose和Expression deformation. 应用到原图的$x_{c,k}$上, 得到目标特征点位置.
+
+![](../rc/face-vid2vid_kpt.png)
+
+
+## Motion Field生成和结果生成
+感觉与FOMM基本差别不大. 利用每个特征点的一阶Taylor展开, 生成多个flow, 对feature进行wrap, 再将wrap的结果送入一个网络得到权重.
+
+![](../rc/face-vid2vid_generate.png)
+
+
+## Training
+
+# SpaceX
+在face-vid2vid的基础上, 加了两个前端(从后往前).
+1. Landmarks2Latents
+    根据标准化的3DDFA和MTCNN特征点, 计算对应的face-vid2vid的特征点. 从而可以显示地控制人脸的emotion, 眨眼等.
+
+2. Speech2Landmarks
+    通过语音驱动标准化的3DDFA和MTCNN特征点.
+
+![](../rc/spaceX_pipeline.png)
+
+# DaGAN
+通过深度图, 对FOMM的结果进行了优化.
+
+1. 通过估计得到的人脸深度图, 来辅助特征点检测(得到更好的特征点).
+2. 对wrap得到的$F_w$, 利用深度图进行进一步加工得到$F_g$.
+
+![](../rc/DaGAN_pipeline.png)
+
+生成部分, 第一个生成网络与原始FOMM基本没有区别. 一个初始的dense motion field $\mathbf{w}_m$, 再对feature进行wrap, 然后利用wrap的feature生成权重$\mathbf{M}_m$和occlustion map $\mathbf{M}_o$, 然后得到最终的$\mathbf{F}_w$.
+
+![](../rc/DaGAN_generator.png)
+
+
+# 一些问题
+FOMM 分辨率如何提高, face-vid2vid 512x512, 其他大部分256 x 256. 分辨率与数据集合相关?

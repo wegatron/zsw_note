@@ -12,6 +12,15 @@
 
 * [Depth-Aware Generative Adversarial Network for Talking Head Video Generation (CVPR 2022)](https://github.com/harlanhong/CVPR2022-DaGAN)
 
+* EAMM: One-Shot Emotional Talking Face via Audio-Based Emotion-Aware Motion Model
+
+## 其他
+
+* [Live Speech Portraits: Real-Time Photorealistic Talking-Head Animation](https://yuanxunlu.github.io/projects/LiveSpeechPortraits/) ACM TOG
+
+* [MetaPortrait]MetaPortrait: Identity-Preserving Talking Head Generation with Fast Personalized Adaptation](https://download.arxiv.org/pdf/2212.08062v2)
+    感觉使用了微软的dense landmark
+
 ## 关键点驱动网格运动算法:
 * [Landmark-guided deformation transfer of template facial expressions for automatic generation of avatar](https://github.com/diegothomas/Avatar-generation-3DRW2019-) blendshapes
 * [Deformation transfer for triangle meshes](https://github.com/mickare/Deformation-Transfer-for-Triangle-Meshes)
