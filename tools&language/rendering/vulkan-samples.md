@@ -123,6 +123,8 @@ frame buffer
 
 ## subpasses
 
+在场景的代码中, 用到了类似ECS的思想, 将素材: image, buffer, material等都作为components. 通过引用这些components, 组建scene.
+
 ### gltf文件
 参考: https://docs.fileformat.com/3d/gltf/
 gltf可以是一个json文件加上其引用的一些文件. subpasses加载的gltf:
@@ -133,7 +135,8 @@ sponza01.gltf # 总的json文件
 Sponza01.bin # buffer, 主要来存储mesh数据
 ```
 
-gltf文件中定义material, images, buffer, mesh等数据, 引用这些数据定义了node(mesh、camera...). scene是node构成的一颗树型结构.
+gltf文件中定义了一个node列表, node可以是mesh、camera. 通过index引用node组建一个或多个scene.
+一个mesh可以包含多个primitive/submesh, 不同的primitive/submesh可以包含不同的属性集合normal,position, 但拥有同一个局部坐标系.
 
 ```
 tiny_gltf_model
@@ -252,3 +255,7 @@ Subpasses::draw_renderpasses // multiple render pass的方式
         std::move(mipmaps));
     image->create_vk_image(device);
     ```
+
+## 思考
+是否可以通过配置文件的形式, 组建进行渲染管线, 流程. json/xml格式的文件如何在编译阶段转化为c/c++代码.
+
