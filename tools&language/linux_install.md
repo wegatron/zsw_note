@@ -104,6 +104,9 @@ sudo apt-get autoclean && sudo apt-get autoremove # 自动清理不需要的软�
 # apt-get autoremove 清理独立的package, 不被其他地方引用到的package
 ```
 
+## 显卡驱动问题
+进入recovery-mode, enable network, apt install nvidia-driver-[515]
+
 ## Reference
 [linux 安装教程](https://linuxmint-installation-guide.readthedocs.io/zh_CN/latest/burn.html)
 [ACHI-RAID-NVME](https://www.v2ex.com/t/534791)
