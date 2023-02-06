@@ -31,6 +31,7 @@ Performance:
 
 Deformable:
 * [nerfies](Nerfies: Deformable Neural Radiance Fields)
+* [Neural Scene Flow Fields for Space-Time View Synthesis of Dynamic Scenes](https://www.cs.cornell.edu/~zl548/NSFF/)
 
 
 在人体/人头/人脸 上研究也较为广泛(可以进行人脸/人体动作的编辑):
