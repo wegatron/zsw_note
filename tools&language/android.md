@@ -154,6 +154,7 @@ android {
 ## NDK和SDK
 * android sdk (Android Software Development Kit, 即android软件开发工具包
     可以说只要你使用java去开发Android这个东西就必须用到. 他包含了SDK Manager 和 AVD Manage, 对于android系统的一些开发版本的管理以及模拟器管理. 它只能运行纯java程序, 有了它模拟器才可以使用. 
+    [SDK 平台版本说明](https://developer.android.com/studio/releases/platforms?hl=zh-cn)
 * ndk (Native Development Kit)跟sdk差不多的是它也是一个开发工具包. 
     用它开发c/c++是很方便的. 他有一个强大的编译集合. Java调C、C++(jni接口), 是一些java如何调C的代码. 它会把C代码编译成一个.SO的动态库, 通过jni接口用java代码去调用它, 有了它我们可以直接在android代码中去添加C代码.
 
