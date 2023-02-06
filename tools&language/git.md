@@ -100,6 +100,9 @@ git submodule update --remote --merge # 更新到与remote相同的版本
 reference: https://git-scm.com/docs/git-submodule
 
 ## git lfs
+
+track 之后, 文件任然需要进行stage才会加入到版本管理中.
+
 ```bash
 git lfs install # git lfs 初始化
 
