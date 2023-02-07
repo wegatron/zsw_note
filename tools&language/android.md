@@ -93,6 +93,11 @@ android {
      * 不同编译版本的设置
      */
     buildTypes {
+        // 启用调试, cmake 生成RelWithDebInfo
+        debug {
+            debuggable true
+            jniDebuggable true
+        }
         release {
             minifyEnabled = false
             proguardFiles getDefaultProguardFile('proguard-android.txt'),
@@ -160,6 +165,19 @@ android {
 
     __Android NDK从r13起, 默认使用Clang进行编译.__ [@Android NDK Clang迁移](https://zhuanlan.zhihu.com/p/27470060)
     但是暂时也没有把GCC删掉,Google会一直等到libc++(Clang的c++标准库实现, gcc使用libstdc++)足够稳定后删掉GCC.
+
+
+## ADB
+在默认android-studio的android-sdk/platform-tools下会有一个adb. 另外在linux下, 也可以通过apt来安装.
+
+常用命令:
+```bash
+# 下载文件
+adb pull [file/dir on device] [local file/dir]
+
+# ssh链接
+adb shell
+```
 
 ## Java和C++
 JNI运行时加载C++动态库, 调用其中的函数.
@@ -282,8 +300,6 @@ ffmpeg -i 0.mjpeg -vocdec mjpeg 00.avi
 release版本需要sign, 参考: https://stackoverflow.com/questions/66579530/error-the-apk-for-your-currently-selected-variant-unknown-output-is-not-signe
 
 >File menu > Project Structure->Modules -> Default Config -> Signing Config -> $signingConfigs.debug
-
-## Profile调试工具&性能工具
 
 
 ## Reference
