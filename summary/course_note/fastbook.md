@@ -116,9 +116,7 @@
     dsets = dblock.datasets(df) # 
     dsets.train[0]
     ```
-    
-    
-    
+            
 * DataAugmentation, 数据增强， 创建原始数据的多种变体. 
 
     ```python
@@ -156,3 +154,6 @@
   
   learn.learn_model
   ```
+
+## Reference
+[](https://github.com/muellerzr/Practical-Deep-Learning-for-Coders-2.0/tree/master/Computer%20Vision)

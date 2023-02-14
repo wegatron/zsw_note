@@ -25,7 +25,7 @@
 Performance:
 * [Instant-ngp]()
     nvidia 
-* [Pixelons]()
+* [Plenoxels]()
 
 * [Mobile nerf]()
 

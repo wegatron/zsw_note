@@ -38,3 +38,6 @@
 [Visualizing A Neural Machine Translation Model (Mechanics of Seq2seq Models With Attention)](https://jalammar.github.io/visualizing-neural-machine-translation-mechanics-of-seq2seq-models-with-attention/)
 [The Annotated Transformer](http://nlp.seas.harvard.edu/2018/04/03/attention.html)
 [Transformer注解及PyTorch实现（上）](https://www.jiqizhixin.com/articles/2018-11-06-10?from=synced&keyword=transformer)
+
+## 学习笔记
+[fast-ai学习笔记](https://zhuanlan.zhihu.com/fastai)
