@@ -2,7 +2,16 @@
 [深度学习项目各阶段经验总结](https://zhuanlan.zhihu.com/p/68045564)
 
 ## 适合入门的开源项目
-[适合初学者的18个经典开源计算机视觉项目](https://www.leiphone.com/category/yanxishe/bUbJNFYR79c3VM5Q.html)
+
+* [适合初学者的18个经典开源计算机视觉项目](https://www.leiphone.com/category/yanxishe/bUbJNFYR79c3VM5Q.html)
+
+* [使用fast.ai构建神经网络项目pipeline](https://towardsdatascience.com/exploring-convolutional-neural-network-architectures-with-fast-ai-de4757eeeebf)
+    开头部分:
+    Part 1: Building an Image Database
+    Part 2: Training with Controlled Randomness,
+    Part 3: Targeting and Removing Bad Training Data
+    另外, 还介绍了resnet的各种演化变种.
+
 分类:
 * 图像分类
 
