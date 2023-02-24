@@ -12,6 +12,11 @@
     Part 3: Targeting and Removing Bad Training Data
     另外, 还介绍了resnet的各种演化变种.
 
+
+[Building an Object Detection Model with FastAI and IceVision](https://sadiva-madaan9.medium.com/building-an-object-detection-model-with-fastai-and-icevision-5738a3142263)
+
+[RotationNet](https://medium.com/@mathis.alex/rotationnet-in-fast-ai-adventures-in-virtual-set-creation-and-computer-vision-cd694ad7ec1b)
+
 分类:
 * 图像分类
 
@@ -50,3 +55,6 @@
 
 ## 学习笔记
 [fast-ai学习笔记](https://zhuanlan.zhihu.com/fastai)
+
+## 理论补充
+[fast-ai course part2](https://course19.fast.ai/videos/?lesson=10)
