@@ -39,3 +39,26 @@ gdown.download(
 ```bash
 curl -L -o data/my-file.h5 'https://drive.google.com/uc?id=my-file-id-here&confirm=t
 ```
+
+## sed 修改文件
+
+```bash
+## -i表示edit files in place
+# add line, 1i表示在第一行插入
+sed -i '1i zzz' file
+
+# remove line, 1d表示删除第一行
+sed -i '1d' file
+
+# 插入多行
+sed -i '/the specific line/i \
+#this\
+##is my\
+text' file
+
+# 删除多行
+sed -i 'M,Nd' file
+
+# 字符串替换
+sed -i 'M,Ns/old/new/g' file
+```

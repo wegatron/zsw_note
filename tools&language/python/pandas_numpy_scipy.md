@@ -132,6 +132,12 @@ pd_frame.tail(n)
 # 还可以使用iloc来进行index range
 ```
 
+```python
+from matplotlib import pyplot as plt
+plt.imshow(data, interpolation='nearest') # data is wxhx3, data type float (0,1)
+plt.show()
+```
+
 ## Reference
 [numpy和pandas入门](https://zhuanlan.zhihu.com/p/27624814)
 [numpy reference](https://docs.scipy.org/doc/numpy/reference/index.html)
